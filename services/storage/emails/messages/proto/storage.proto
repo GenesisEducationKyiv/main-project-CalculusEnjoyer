@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package messages;
+
+option go_package = "./proto";
+
+service StorageService {
+  rpc AddEmail (AddEmailRequest) returns (AddEmailResponse) {}
+  rpc GetAllEmails (GetAllEmailsRequest) returns (GetAllEmailsResponse) {}
+}
+
+message AddEmailRequest {
+  string email = 1;
+}
+
+message AddEmailResponse {
+  string error = 1;
+}
+
+message GetAllEmailsRequest {}
+
+message GetAllEmailsResponse {
+  repeated string email = 1;
+}
