@@ -1,0 +1,9 @@
+linters:
+  disable-all: true
+  enable:
+    - goimports
+    - gofmt
+    - gochecknoglobals
+    - gomnd
+    - goconst
+    - bodyclose
