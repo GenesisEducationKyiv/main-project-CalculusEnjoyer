@@ -6,6 +6,7 @@ import (
 	"email/dispatcher/executor"
 	"email/dispatcher/executor/templates"
 	"email/dispatcher/messages/proto"
+
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 

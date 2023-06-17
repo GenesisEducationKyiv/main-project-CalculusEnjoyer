@@ -3,6 +3,8 @@ linters:
   enable:
     - goimports
     - gofmt
+    - ineffassign
+    - gosimple
     - gochecknoglobals
     - gomnd
     - goconst

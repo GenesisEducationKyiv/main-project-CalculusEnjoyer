@@ -2,10 +2,13 @@ package errors
 
 import "fmt"
 
-var (
-	EmailAlreadyExist    = StorageError{Code: 0, Message: "email is already exists"}
-	InternalStorageError = StorageError{Code: 1, Message: "unknown storage error"}
-)
+func EmailAlreadyExist() StorageError {
+	return StorageError{Code: 0, Message: "email is already exists"}
+}
+
+func InternalStorageError() StorageError {
+	return StorageError{Code: 1, Message: "unknown storage error"}
+}
 
 type StorageError struct {
 	Message string

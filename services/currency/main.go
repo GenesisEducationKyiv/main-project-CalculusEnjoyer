@@ -3,13 +3,15 @@ package main
 import (
 	"currency/rate"
 	"currency/rate/messages/proto"
+	"currency/rate/providsers"
 	"currency/rate/transport"
-	kitgrpc "github.com/go-kit/kit/transport/grpc"
-	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
+
+	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -18,10 +20,13 @@ func main() {
 
 func run() {
 	err := godotenv.Load()
+	if err != err {
+		log.Fatalf("Failed to load configs")
+	}
 	network := os.Getenv("NETWORK")
 	port := os.Getenv("PORT")
 
-	service := rate.NewService()
+	service := rate.NewService(&providsers.CoinGeckoRateProvider{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))

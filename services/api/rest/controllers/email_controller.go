@@ -12,17 +12,21 @@ import (
 	"strconv"
 )
 
-var rateGRPCClient currency.CurrencyGRPCClient
-var emailGRPCClient email.EmailGRPCClient
-var storageGRPCClient storage.StorageGRPCClient
-
-func init() {
-	rateGRPCClient = currency.CurrencyGRPCClient{}
-	emailGRPCClient = email.EmailGRPCClient{}
-	storageGRPCClient = storage.StorageGRPCClient{}
+type EmailController struct {
+	rateGRPCClient    currency.CurrencyGRPCClient
+	emailGRPCClient   email.EmailGRPCClient
+	storageGRPCClient storage.StorageGRPCClient
 }
 
-func AddEmail(w http.ResponseWriter, r *http.Request) {
+func NewEmailController() *EmailController {
+	return &EmailController{
+		rateGRPCClient:    *currency.NewCurrencyGRPCClient(),
+		emailGRPCClient:   *email.NewEmailGRPCClient(),
+		storageGRPCClient: *storage.NewStorageGRPCClient(),
+	}
+}
+
+func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	err := r.ParseForm()
@@ -37,7 +41,7 @@ func AddEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = storageGRPCClient.AddEmail(proto.AddEmailRequest{
+	_, err = e.storageGRPCClient.AddEmail(proto.AddEmailRequest{
 		Email: email,
 	})
 
@@ -45,25 +49,23 @@ func AddEmail(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "email already exists in database", http.StatusConflict)
 		return
 	}
-
-	return
 }
 
-func SendEmails(w http.ResponseWriter, r *http.Request) {
+func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rateResp, _ := rateGRPCClient.GetRate(rateProto.RateRequest{
+	rateResp, _ := e.rateGRPCClient.GetRate(rateProto.RateRequest{
 		BaseCurrency:   "bitcoin",
 		TargetCurrency: "uah",
 	})
 	rate := rateResp.Rate
 
-	emailsResponse := storageGRPCClient.GetAllEmails(proto.GetAllEmailsRequest{})
+	emailsResponse := e.storageGRPCClient.GetAllEmails(proto.GetAllEmailsRequest{})
 	emails := emailsResponse.Email
 
 	var err error
 	for i := range emails {
-		err = emailGRPCClient.SendEmail(emailProto.SendEmailRequest{
+		err = e.emailGRPCClient.SendEmail(emailProto.SendEmailRequest{
 			Body:    utils.BtcRateString + strconv.FormatFloat(rate, 'f', -1, 64),
 			Subject: utils.BtcRateSubject,
 			To:      emails[i],
@@ -73,6 +75,4 @@ func SendEmails(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "some emails were not sent because of incorrect email structure", http.StatusBadRequest)
 	}
-
-	return
 }

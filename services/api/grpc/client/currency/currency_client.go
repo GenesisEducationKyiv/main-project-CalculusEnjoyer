@@ -3,30 +3,36 @@ package currency
 import (
 	"context"
 	"currency/rate/messages/proto"
-	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
-var network string
-var port string
-var client proto.RateServiceClient
-var connection *grpc.ClientConn
+type CurrencyGRPCClient struct {
+	network string
+	port    string
+}
 
-type CurrencyGRPCClient struct{}
+func NewCurrencyGRPCClient() *CurrencyGRPCClient {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Can not load .env config")
+	}
 
-func init() {
-	_ = godotenv.Load()
-	network = os.Getenv("CURRENCY_NETWORK")
-	port = os.Getenv("CURRENCY_SERVICE_PORT")
+	return &CurrencyGRPCClient{
+		os.Getenv("CURRENCY_NETWORK"),
+		os.Getenv("CURRENCY_SERVICE_PORT"),
+	}
+
 }
 
 func (c *CurrencyGRPCClient) GetRate(request proto.RateRequest) (proto.RateResponse, error) {
 	conn := c.getConnection()
 	defer conn.Close()
 
-	client = proto.NewRateServiceClient(conn)
+	client := proto.NewRateServiceClient(conn)
 
 	response, err := client.GetRate(context.Background(), &request)
 	if err != nil {
@@ -37,7 +43,7 @@ func (c *CurrencyGRPCClient) GetRate(request proto.RateRequest) (proto.RateRespo
 }
 
 func (c *CurrencyGRPCClient) getConnection() *grpc.ClientConn {
-	conn, err := grpc.Dial(network+":"+port, grpc.WithInsecure())
+	conn, err := grpc.Dial(c.network+":"+c.port, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}

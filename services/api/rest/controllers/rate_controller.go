@@ -7,16 +7,18 @@ import (
 	"net/http"
 )
 
-var currencyGRPCClient currency.CurrencyGRPCClient
-
-func init() {
-	currencyGRPCClient = currency.CurrencyGRPCClient{}
+type RateController struct {
+	currencyGRPCClient currency.CurrencyGRPCClient
 }
 
-func GetRate(w http.ResponseWriter, r *http.Request) {
+func NewRateController() *RateController {
+	return &RateController{currencyGRPCClient: *currency.NewCurrencyGRPCClient()}
+}
+
+func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	response, err := currencyGRPCClient.GetRate(proto.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"})
+	response, err := rc.currencyGRPCClient.GetRate(proto.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

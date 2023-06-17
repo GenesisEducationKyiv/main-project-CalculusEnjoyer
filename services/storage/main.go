@@ -1,18 +1,17 @@
 package main
 
 import (
-	kitgrpc "github.com/go-kit/kit/transport/grpc"
-	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"storage/emails"
 	"storage/emails/messages/proto"
 	"storage/emails/transport"
-)
 
-var StorageFile *os.File
+	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
+)
 
 func main() {
 	run()
@@ -20,6 +19,9 @@ func main() {
 
 func run() {
 	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error getting the .env config")
+	}
 	network := os.Getenv("NETWORK")
 	port := os.Getenv("PORT")
 

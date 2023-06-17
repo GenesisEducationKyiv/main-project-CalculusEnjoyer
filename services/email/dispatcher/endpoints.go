@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"context"
 	"email/dispatcher/executor"
+
 	"github.com/go-kit/kit/endpoint"
 )
 

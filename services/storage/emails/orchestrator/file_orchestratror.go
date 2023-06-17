@@ -2,33 +2,37 @@ package orchestrator
 
 import (
 	"encoding/csv"
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/pkg/errors"
+
+	"github.com/joho/godotenv"
 )
 
-var StoragePath string
-var StorageFile *os.File
+type FileOrchestrator struct {
+	StoragePath string
+	StorageFile *os.File
+}
 
-type FileOrchestrator struct{}
-
-func init() {
+func NewOrchestrator() *FileOrchestrator {
 	err := godotenv.Load()
-	StoragePath = os.Getenv("STORAGE_PATH")
+	orchestrator := FileOrchestrator{StoragePath: os.Getenv("STORAGE_PATH")}
 
 	if err != nil {
 		print(err.Error())
 	}
+
+	return &orchestrator
 }
 
 func (o *FileOrchestrator) OpenCSVFile() (*os.File, error) {
 
-	file, err := os.OpenFile(StoragePath, os.O_APPEND|os.O_CREATE|os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(o.StoragePath, os.O_APPEND|os.O_CREATE|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
-	StorageFile = file
 
-	return StorageFile, nil
+	return file, nil
 }
 
 func (o *FileOrchestrator) ReadCSVData() (*csv.Reader, error) {
@@ -47,4 +51,19 @@ func (o *FileOrchestrator) WriteCsvData() (*csv.Writer, error) {
 	}
 
 	return csv.NewWriter(file), nil
+}
+
+func (o *FileOrchestrator) GetAllRecords() (records [][]string, err error) {
+	cvsReader, err := o.ReadCSVData()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Can not read file")
+	}
+
+	allData, err := (*cvsReader).ReadAll()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Can not get emails from file")
+	}
+	return allData, nil
 }

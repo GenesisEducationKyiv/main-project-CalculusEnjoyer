@@ -5,6 +5,7 @@ import (
 	"currency/rate"
 	"currency/rate/messages"
 	"currency/rate/messages/proto"
+
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 

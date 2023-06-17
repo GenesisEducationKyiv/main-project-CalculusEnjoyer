@@ -2,10 +2,11 @@ package transport
 
 import (
 	"context"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"storage/emails"
 	"storage/emails/messages"
 	"storage/emails/messages/proto"
+
+	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 
 type grpcServer struct {

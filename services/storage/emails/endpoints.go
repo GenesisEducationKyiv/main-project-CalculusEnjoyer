@@ -2,8 +2,9 @@ package emails
 
 import (
 	context1 "context"
-	"github.com/go-kit/kit/endpoint"
 	"storage/emails/messages"
+
+	"github.com/go-kit/kit/endpoint"
 )
 
 type Endpoints struct {

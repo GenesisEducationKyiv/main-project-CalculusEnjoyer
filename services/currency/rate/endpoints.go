@@ -3,6 +3,7 @@ package rate
 import (
 	"context"
 	"currency/rate/messages"
+
 	"github.com/go-kit/kit/endpoint"
 )
 

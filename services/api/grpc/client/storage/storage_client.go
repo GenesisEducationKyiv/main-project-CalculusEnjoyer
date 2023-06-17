@@ -2,31 +2,36 @@ package storage
 
 import (
 	"context"
-	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
 	"log"
 	"os"
 	"storage/emails/messages/proto"
+
+	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
-var storageNetwork string
-var port string
-var client proto.StorageServiceClient
-var connection *grpc.ClientConn
+type StorageGRPCClient struct {
+	storageNetwork string
+	port           string
+}
 
-type StorageGRPCClient struct{}
+func NewStorageGRPCClient() *StorageGRPCClient {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Can not load .env config")
+	}
 
-func init() {
-	_ = godotenv.Load()
-	storageNetwork = os.Getenv("STORAGE_NETWORK")
-	port = os.Getenv("STORAGE_SERVICE_PORT")
+	return &StorageGRPCClient{
+		os.Getenv("STORAGE_NETWORK"),
+		os.Getenv("STORAGE_SERVICE_PORT"),
+	}
 }
 
 func (c *StorageGRPCClient) AddEmail(request proto.AddEmailRequest) (proto.AddEmailResponse, error) {
 	conn := c.getConnection()
 	defer conn.Close()
 
-	client = proto.NewStorageServiceClient(conn)
+	client := proto.NewStorageServiceClient(conn)
 
 	response, err := client.AddEmail(context.Background(), &request)
 	if response == nil {
@@ -39,7 +44,7 @@ func (c *StorageGRPCClient) GetAllEmails(request proto.GetAllEmailsRequest) prot
 	conn := c.getConnection()
 	defer conn.Close()
 
-	client = proto.NewStorageServiceClient(conn)
+	client := proto.NewStorageServiceClient(conn)
 
 	response, err := client.GetAllEmails(context.Background(), &request)
 	if err != nil {
@@ -50,7 +55,7 @@ func (c *StorageGRPCClient) GetAllEmails(request proto.GetAllEmailsRequest) prot
 }
 
 func (c *StorageGRPCClient) getConnection() *grpc.ClientConn {
-	conn, err := grpc.Dial(storageNetwork+":"+port, grpc.WithInsecure())
+	conn, err := grpc.Dial(c.storageNetwork+":"+c.port, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
