@@ -25,21 +25,21 @@ func NewCurrencyGRPCClient() *CurrencyGRPCClient {
 		os.Getenv("CURRENCY_NETWORK"),
 		os.Getenv("CURRENCY_SERVICE_PORT"),
 	}
-
 }
 
-func (c *CurrencyGRPCClient) GetRate(request proto.RateRequest) (proto.RateResponse, error) {
+func (c *CurrencyGRPCClient) GetRate(request *proto.RateRequest) (*proto.RateResponse, error) {
 	conn := c.getConnection()
 	defer conn.Close()
 
 	client := proto.NewRateServiceClient(conn)
 
-	response, err := client.GetRate(context.Background(), &request)
+	response, err := client.GetRate(context.Background(), request)
 	if err != nil {
-		log.Fatalf("Failed to call GetRate: %v", err)
+		log.Printf("Failed to call GetRate: %v", err)
+		return nil, err
 	}
 
-	return *response, err
+	return response, err
 }
 
 func (c *CurrencyGRPCClient) getConnection() *grpc.ClientConn {

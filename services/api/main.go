@@ -24,7 +24,6 @@ func run() {
 	}
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
-
 	if err != nil {
 		log.Fatalf("Port must be integer")
 	}

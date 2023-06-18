@@ -27,31 +27,31 @@ func NewStorageGRPCClient() *StorageGRPCClient {
 	}
 }
 
-func (c *StorageGRPCClient) AddEmail(request proto.AddEmailRequest) (proto.AddEmailResponse, error) {
+func (c *StorageGRPCClient) AddEmail(request *proto.AddEmailRequest) (*proto.AddEmailResponse, error) {
 	conn := c.getConnection()
 	defer conn.Close()
 
 	client := proto.NewStorageServiceClient(conn)
 
-	response, err := client.AddEmail(context.Background(), &request)
+	response, err := client.AddEmail(context.Background(), request)
 	if response == nil {
-		return proto.AddEmailResponse{}, err
+		return &proto.AddEmailResponse{}, err
 	}
-	return *response, err
+	return response, err
 }
 
-func (c *StorageGRPCClient) GetAllEmails(request proto.GetAllEmailsRequest) proto.GetAllEmailsResponse {
+func (c *StorageGRPCClient) GetAllEmails(request *proto.GetAllEmailsRequest) *proto.GetAllEmailsResponse {
 	conn := c.getConnection()
 	defer conn.Close()
 
 	client := proto.NewStorageServiceClient(conn)
 
-	response, err := client.GetAllEmails(context.Background(), &request)
+	response, err := client.GetAllEmails(context.Background(), request)
 	if err != nil {
 		log.Fatalf("Failed to call GetRate: %v", err)
 	}
 
-	return *response
+	return response
 }
 
 func (c *StorageGRPCClient) getConnection() *grpc.ClientConn {

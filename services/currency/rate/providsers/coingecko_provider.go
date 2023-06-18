@@ -3,18 +3,31 @@ package providsers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
-const CoinGeckoUrl = "https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=%s"
-
-type CoinGeckoRateProvider struct{}
+type CoinGeckoRateProvider struct{ coinGeckoURL string }
 
 type CoinGeckoResponse map[string]map[string]float64
 
-func (*CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error) {
-	url := fmt.Sprintf(CoinGeckoUrl, baseCurrency, targetCurrency)
+func NewCoinGeckoRateProvider() *CoinGeckoRateProvider {
+	err := godotenv.Load()
+	if err != err {
+		log.Fatalf("Failed to load configs")
+	}
+
+	return &CoinGeckoRateProvider{
+		os.Getenv("COINGEKCO_URL"),
+	}
+}
+
+func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error) {
+	url := fmt.Sprintf(p.coinGeckoURL, baseCurrency, targetCurrency)
 
 	response, err := http.Get(url)
 	if err != nil {

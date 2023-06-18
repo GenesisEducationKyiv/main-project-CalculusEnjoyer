@@ -27,13 +27,13 @@ func NewEmailGRPCClient() *EmailGRPCClient {
 	}
 }
 
-func (c *EmailGRPCClient) SendEmail(request proto.SendEmailRequest) error {
+func (c *EmailGRPCClient) SendEmail(request *proto.SendEmailRequest) error {
 	conn := c.getConnection()
 	defer conn.Close()
 
 	client := proto.NewEmailServiceClient(conn)
 
-	_, err := client.SendEmail(context.Background(), &request)
+	_, err := client.SendEmail(context.Background(), request)
 
 	return err
 }

@@ -63,7 +63,7 @@ func (UnimplementedRateServiceServer) GetRate(context.Context, *RateRequest) (*R
 
 // UnsafeRateServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to RateServiceServer will
-// result in compilation errors.
+// result in compilation error.
 type UnsafeRateServiceServer interface {
 	mustEmbedUnimplementedRateServiceServer()
 }

@@ -34,7 +34,6 @@ func NewGoSender() *GomailSender {
 		os.Getenv("EMAIL_SENDER"),
 		os.Getenv("EMAIL_PASS"),
 	}
-
 }
 
 func (s GomailSender) Send(content templates.EmailContent, email string) (err error) {

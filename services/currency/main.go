@@ -26,7 +26,7 @@ func run() {
 	network := os.Getenv("NETWORK")
 	port := os.Getenv("PORT")
 
-	service := rate.NewService(&providsers.CoinGeckoRateProvider{})
+	service := rate.NewService(providsers.NewCoinGeckoRateProvider())
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))

@@ -63,7 +63,7 @@ func (UnimplementedEmailServiceServer) SendEmail(context.Context, *SendEmailRequ
 
 // UnsafeEmailServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to EmailServiceServer will
-// result in compilation errors.
+// result in compilation error.
 type UnsafeEmailServiceServer interface {
 	mustEmbedUnimplementedEmailServiceServer()
 }

@@ -1,12 +1,9 @@
 package emails
 
 import (
-	"encoding/csv"
-	storageErrors "storage/emails/errors"
+	storageErrors "storage/emails/error"
 	"storage/emails/messages"
 	"storage/emails/orchestrator"
-
-	"github.com/pkg/errors"
 )
 
 type storageService struct {
@@ -19,26 +16,15 @@ func NewService() StorageService {
 
 func (r *storageService) AddEmail(email messages.Email) (err error) {
 	isExist, err := r.CheckIfEmailExists(email)
-
 	if err != nil {
-		return errors.Wrap(err, "Error while checking if email already exist")
+		return storageErrors.InternalStorageError()
 	}
 
 	if !isExist && err == nil {
-		var writer *csv.Writer
-		writer, err = r.Orchestrator.WriteCsvData()
-
+		err = r.Orchestrator.WriteEmail(email)
 		if err != nil {
-			return errors.Wrap(err, "Error while adding email")
+			return storageErrors.InternalStorageError()
 		}
-
-		err = writer.Write([]string{email.Value})
-
-		if err != nil {
-			return errors.Wrap(err, "Error while adding email")
-		}
-
-		writer.Flush()
 	}
 
 	if isExist {
@@ -50,9 +36,8 @@ func (r *storageService) AddEmail(email messages.Email) (err error) {
 
 func (r *storageService) GetAllEmails() (emails []messages.Email, err error) {
 	allData, err := r.Orchestrator.GetAllRecords()
-
 	if err != nil {
-		return nil, errors.Wrap(err, "Error while getting all emails")
+		return nil, storageErrors.InternalStorageError()
 	}
 
 	for i := range allData {
@@ -64,9 +49,8 @@ func (r *storageService) GetAllEmails() (emails []messages.Email, err error) {
 
 func (r *storageService) CheckIfEmailExists(email messages.Email) (result bool, err error) {
 	allData, err := r.Orchestrator.GetAllRecords()
-
 	if err != nil {
-		return false, errors.Wrap(err, "Error while getting all emails")
+		return false, storageErrors.InternalStorageError()
 	}
 
 	for i := range allData {

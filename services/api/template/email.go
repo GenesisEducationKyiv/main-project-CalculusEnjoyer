@@ -1,4 +1,4 @@
-package utils
+package template
 
 const (
 	BtcRateString  = "Today's BTC/UAH rate is: "
