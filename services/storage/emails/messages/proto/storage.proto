@@ -13,9 +13,7 @@ message AddEmailRequest {
   string email = 1;
 }
 
-message AddEmailResponse {
-  string error = 1;
-}
+message AddEmailResponse {}
 
 message GetAllEmailsRequest {}
 

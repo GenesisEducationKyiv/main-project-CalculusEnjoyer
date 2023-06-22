@@ -1,6 +1,6 @@
 package template
 
 const (
-	BtcRateString  = "Today's BTC/UAH rate is: "
-	BtcRateSubject = "BTC/UAH rate"
+	BTCRateString  = "Today's BTC/UAH crypto is: "
+	BTCRateSubject = "BTC/UAH crypto"
 )

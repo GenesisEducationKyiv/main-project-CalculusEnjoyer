@@ -1,63 +1,63 @@
 package emails
 
 import (
-	storageErrors "storage/emails/error"
 	"storage/emails/messages"
 	"storage/emails/orchestrator"
+	"storage/serror"
+
+	"github.com/pkg/errors"
 )
 
 type storageService struct {
-	Orchestrator orchestrator.FileOrchestrator
+	Orchestrator orchestrator.Orchestrator
 }
 
-func NewService() StorageService {
-	return &storageService{Orchestrator: *orchestrator.NewOrchestrator()}
+func NewService(orchestrator orchestrator.Orchestrator) StorageService {
+	return &storageService{Orchestrator: orchestrator}
 }
 
-func (r *storageService) AddEmail(email messages.Email) (err error) {
+func (r *storageService) AddEmail(email messages.Email) error {
 	isExist, err := r.CheckIfEmailExists(email)
 	if err != nil {
-		return storageErrors.InternalStorageError()
+		return errors.Wrap(err, "can not check if email exists")
 	}
 
 	if !isExist && err == nil {
 		err = r.Orchestrator.WriteEmail(email)
 		if err != nil {
-			return storageErrors.InternalStorageError()
+			return errors.Wrap(err, "can not write email")
 		}
 	}
 
 	if isExist {
-		err = storageErrors.EmailAlreadyExist()
+		return serror.ErrEmailAlreadyExists
 	}
 
-	return err
+	return nil
 }
 
 func (r *storageService) GetAllEmails() (emails []messages.Email, err error) {
-	allData, err := r.Orchestrator.GetAllRecords()
+	allEmails, err := r.Orchestrator.GetAllRecords()
 	if err != nil {
-		return nil, storageErrors.InternalStorageError()
+		return nil, errors.Wrap(err, "can not get all emails")
 	}
 
-	for i := range allData {
-		emails = append(emails, messages.Email{Value: allData[i][0]})
-	}
+	emails = append(emails, allEmails...)
 
-	return emails, err
+	return emails, nil
 }
 
-func (r *storageService) CheckIfEmailExists(email messages.Email) (result bool, err error) {
+func (r *storageService) CheckIfEmailExists(email messages.Email) (bool, error) {
 	allData, err := r.Orchestrator.GetAllRecords()
 	if err != nil {
-		return false, storageErrors.InternalStorageError()
+		return false, errors.Wrap(err, "can not get all records")
 	}
 
 	for i := range allData {
-		if (allData[i][0]) == email.Value {
-			return true, err
+		if (allData[i].Value) == email.Value {
+			return true, nil
 		}
 	}
 
-	return false, err
+	return false, nil
 }

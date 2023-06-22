@@ -6,6 +6,8 @@ import (
 	"storage/emails/messages"
 	"storage/emails/messages/proto"
 
+	"google.golang.org/grpc/status"
+
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 
@@ -41,7 +43,7 @@ func (g grpcServer) AddEmail(ctx context.Context, request *proto.AddEmailRequest
 func (g grpcServer) GetAllEmails(ctx context.Context, request *proto.GetAllEmailsRequest) (*proto.GetAllEmailsResponse, error) {
 	_, rep, err := g.getAllEmails.ServeGRPC(ctx, request)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(status.Code(err), err.Error())
 	}
 	response := rep.(proto.GetAllEmailsResponse)
 	return &response, nil
@@ -56,8 +58,8 @@ func decodeGRPCAddEmailResponse(_ context.Context, grpcRes interface{}) (interfa
 	if grpcRes == nil {
 		return proto.AddEmailResponse{}, nil
 	}
-	req := grpcRes.(*error)
-	return proto.AddEmailResponse{Error: (*req).Error()}, nil
+	req := grpcRes.(error)
+	return nil, status.Error(status.Code(req), req.Error())
 }
 
 func decodeGRPCGetAllEmailsRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {

@@ -1,16 +1,16 @@
 package main
 
 import (
+	"email/config"
 	"email/dispatcher"
 	sender "email/dispatcher/executor"
 	"email/dispatcher/messages/proto"
 	"email/dispatcher/transport"
 	"log"
 	"net"
-	"os"
+	"strconv"
 
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
-	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 )
 
@@ -19,19 +19,15 @@ func main() {
 }
 
 func run() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Can not load .env config")
-	}
-	network := os.Getenv("NETWORK")
-	port := os.Getenv("PORT")
+	conf := config.LoadFromENV()
 
-	service := dispatcher.NewService(sender.NewGoSender())
+	service := dispatcher.NewService(sender.NewGoSender(conf))
 	eps := dispatcher.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
 	proto.RegisterEmailServiceServer(baseServer, grpcServer)
-	lis, err := net.Listen(network, ":"+port)
+
+	lis, err := net.Listen(conf.Network, ":"+strconv.Itoa(conf.Port))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}

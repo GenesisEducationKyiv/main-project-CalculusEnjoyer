@@ -42,6 +42,6 @@ func decodeGRPCSendEmailResponse(_ context.Context, grpcReply interface{}) (inte
 	if grpcReply == nil {
 		return proto.SendEmailResponse{}, nil
 	}
-	err := grpcReply.(*error)
-	return proto.SendEmailResponse{Error: (*err).Error()}, nil
+	err := grpcReply.(error)
+	return nil, err
 }

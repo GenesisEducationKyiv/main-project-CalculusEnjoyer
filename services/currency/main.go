@@ -1,16 +1,17 @@
 package main
 
 import (
+	"currency/config"
 	"currency/rate"
 	"currency/rate/messages/proto"
-	"currency/rate/providsers"
+	"currency/rate/providsers/crypto"
+	"currency/rate/providsers/time"
 	"currency/rate/transport"
 	"log"
 	"net"
-	"os"
+	"strconv"
 
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
-	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 )
 
@@ -19,24 +20,19 @@ func main() {
 }
 
 func run() {
-	err := godotenv.Load()
-	if err != err {
-		log.Fatalf("Failed to load configs")
-	}
-	network := os.Getenv("NETWORK")
-	port := os.Getenv("PORT")
+	conf := config.LoadFromENV()
 
-	service := rate.NewService(providsers.NewCoinGeckoRateProvider())
+	service := rate.NewService(crypto.NewCoinGeckoRateProvider(conf), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
 	proto.RegisterRateServiceServer(baseServer, grpcServer)
-	lis, err := net.Listen(network, ":"+port)
+	lis, err := net.Listen(conf.Network, ":"+strconv.Itoa(conf.Port))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	if err := baseServer.Serve(lis); err != nil {
+	if err = baseServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }

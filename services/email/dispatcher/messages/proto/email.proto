@@ -14,6 +14,4 @@ message SendEmailRequest {
   string to = 3;
 }
 
-message SendEmailResponse {
-  string error = 1;
-}
+message SendEmailResponse {}

@@ -5,4 +5,6 @@ const (
 	Rate       = "/rate"
 	AddEmails  = "/subscribe"
 	SendEmails = "/sendEmails"
+
+	KeyEmail = "email"
 )

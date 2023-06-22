@@ -1,6 +1,8 @@
 package messages
 
+import "time"
+
 type RateResult struct {
 	Rate      float64
-	Timestamp string
+	Timestamp time.Time
 }

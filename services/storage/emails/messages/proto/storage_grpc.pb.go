@@ -78,7 +78,7 @@ func (UnimplementedStorageServiceServer) GetAllEmails(context.Context, *GetAllEm
 
 // UnsafeStorageServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to StorageServiceServer will
-// result in compilation error.
+// result in compilation serror.
 type UnsafeStorageServiceServer interface {
 	mustEmbedUnimplementedStorageServiceServer()
 }

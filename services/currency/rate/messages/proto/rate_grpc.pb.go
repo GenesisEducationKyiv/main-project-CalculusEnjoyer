@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.20.1
-// source: rate.proto
+// source: crypto.proto
 
 package proto
 
@@ -63,7 +63,7 @@ func (UnimplementedRateServiceServer) GetRate(context.Context, *RateRequest) (*R
 
 // UnsafeRateServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to RateServiceServer will
-// result in compilation error.
+// result in compilation serror.
 type UnsafeRateServiceServer interface {
 	mustEmbedUnimplementedRateServiceServer()
 }
@@ -103,5 +103,5 @@ var RateService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "rate.proto",
+	Metadata: "crypto.proto",
 }

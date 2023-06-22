@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v3.20.1
-// source: rate.proto
+// source: crypto.proto
 
 package proto
 
@@ -80,9 +80,9 @@ type RateResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Rate      float64 `protobuf:"fixed64,1,opt,name=rate,proto3" json:"rate,omitempty"`
+	Rate      float64 `protobuf:"fixed64,1,opt,name=crypto,proto3" json:"crypto,omitempty"`
 	Timestamp string  `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Error     string  `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	Error     string  `protobuf:"bytes,3,opt,name=serror,proto3" json:"serror,omitempty"`
 }
 
 func (x *RateResponse) Reset() {
