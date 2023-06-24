@@ -1,28 +1,27 @@
 package main
 
 import (
-	"currency/config"
 	"currency/rate"
 	"currency/rate/messages/proto"
-	"currency/rate/providsers/crypto"
-	"currency/rate/providsers/time"
 	"currency/rate/transport"
+	"currency/test"
 	"log"
 	"net"
 	"strconv"
+	"time"
 
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	run()
+	runTest()
 }
 
-func run() {
-	conf := config.LoadFromENV()
+func runTest() {
+	conf := test.LoadFromENV()
 
-	service := rate.NewRateService(crypto.NewCoinGeckoRateProvider(conf), &time.SystemTime{})
+	service := rate.NewRateService(&stubRateProvider{TestRate: conf.TestRate}, &stubTimeProvider{TestTimeStamp: conf.TestUnixTimeStamp})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
@@ -35,4 +34,20 @@ func run() {
 	if err = baseServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
+}
+
+type stubRateProvider struct {
+	TestRate float64
+}
+
+func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error) {
+	return r.TestRate, nil
+}
+
+type stubTimeProvider struct {
+	TestTimeStamp time.Time
+}
+
+func (t *stubTimeProvider) Now() time.Time {
+	return t.TestTimeStamp
 }

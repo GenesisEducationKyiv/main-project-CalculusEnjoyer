@@ -28,7 +28,7 @@ func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(response.Rate)
+	err = json.NewEncoder(w).Encode(response)
 
 	if err != nil {
 		http.Error(w, aerror.ErrFailedToEncodeResponse.Error(), http.StatusInternalServerError)

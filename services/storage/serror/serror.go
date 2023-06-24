@@ -8,4 +8,5 @@ import (
 var (
 	ErrInternalStorageError = status.Error(codes.Internal, "internal storage error")
 	ErrEmailAlreadyExists   = status.Error(codes.AlreadyExists, "email already exist")
+	ErrStorage              = status.Error(codes.Internal, "storage is not working properlly")
 )

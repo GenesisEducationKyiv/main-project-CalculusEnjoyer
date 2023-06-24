@@ -6,5 +6,5 @@ type RateRequest struct {
 }
 
 type RateResponse struct {
-	Rate float64
+	Rate float64 `json:"rate"`
 }

@@ -1,0 +1,17 @@
+version: '3'
+services:
+  currency:
+    build:
+      context: ../../services/currency
+      dockerfile: ./test/e2e/Dockerfile
+    ports:
+      - "8083:8083"
+
+  api:
+    build:
+      context: ../../services
+      dockerfile: ./api/Dockerfile
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
