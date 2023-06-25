@@ -8,25 +8,29 @@ import (
 	"log"
 	"strconv"
 
+	"google.golang.org/grpc/connectivity"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
 type CurrencyGRPCClient struct {
 	conf config.Config
+	conn *grpc.ClientConn
 }
 
 func NewCurrencyGRPCClient(conf config.Config) *CurrencyGRPCClient {
-	return &CurrencyGRPCClient{conf: conf}
+	client := CurrencyGRPCClient{conf: conf}
+	client.conn = client.getConnection()
+	return &client
 }
 
-func (c *CurrencyGRPCClient) GetRate(request *models.RateRequest) (*models.RateResponse, error) {
-	conn := c.getConnection()
-	defer conn.Close()
+func (c *CurrencyGRPCClient) GetRate(request *models.RateRequest, cnx context.Context) (*models.RateResponse, error) {
+	conn := c.connection()
 
 	client := proto.NewRateServiceClient(conn)
 
-	response, err := client.GetRate(context.Background(), modelRateToProto(request))
+	response, err := client.GetRate(cnx, modelRateToProto(request))
 	if err != nil {
 		return nil, errors.Wrap(err, "can not get rate")
 	}
@@ -37,10 +41,19 @@ func (c *CurrencyGRPCClient) GetRate(request *models.RateRequest) (*models.RateR
 func (c *CurrencyGRPCClient) getConnection() *grpc.ClientConn {
 	conn, err := grpc.Dial(c.conf.CurrencyNetwork+":"+strconv.Itoa(c.conf.CurrencyPort), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Failed to connect: %v", err)
+		log.Printf("Failed to connect: %v", err)
 	}
 
 	return conn
+}
+
+func (c *CurrencyGRPCClient) connection() *grpc.ClientConn {
+	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
+		return c.conn
+	} else {
+		c.conn = c.getConnection()
+		return c.conn
+	}
 }
 
 func protoRateToModel(response *proto.RateResponse) *models.RateResponse {

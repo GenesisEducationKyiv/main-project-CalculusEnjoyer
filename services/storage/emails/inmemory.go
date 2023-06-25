@@ -22,7 +22,7 @@ func (r *storageService) AddEmail(email messages.Email) error {
 		return errors.Wrap(err, "can not check if email exists")
 	}
 
-	if !isExist && err == nil {
+	if !isExist {
 		err = r.Orchestrator.WriteEmail(email)
 		if err != nil {
 			return errors.Wrap(err, "can not write email")

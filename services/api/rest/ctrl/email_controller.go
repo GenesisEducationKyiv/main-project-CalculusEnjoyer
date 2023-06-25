@@ -6,10 +6,11 @@ import (
 	"api/rest"
 	"api/template"
 	"api/validator"
-	"context"
 	"email/dispatcher/executor/templates"
 	"net/http"
 	"strconv"
+
+	"github.com/pkg/errors"
 
 	"github.com/fullstorydev/grpchan/httpgrpc"
 	"google.golang.org/grpc/status"
@@ -53,7 +54,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 
 	err = e.storageOrchestrator.AddEmail(models.AddEmailRequest{Email: models.Email{Value: email}})
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(context.Background(), status.Convert(err), w)
+		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
 		return
 	}
 }
@@ -61,9 +62,9 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rateResp, err := e.rateProvider.GetRate(&models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"})
+	rateResp, err := e.rateProvider.GetRate(&models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(context.Background(), status.Convert(err), w)
+		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
 		return
 	}
 
@@ -72,16 +73,20 @@ func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
 	emailsResponse, err := e.storageOrchestrator.GetAllEmails()
 
 	for i := range emailsResponse {
-		err = e.emailExecutor.SendEmail(models.SendEmailsRequest{
+		newErr := e.emailExecutor.SendEmail(models.SendEmailsRequest{
 			Interceptor: emailsResponse[i],
 			Template: templates.EmailContent{
 				Body:    template.BTCRateString + strconv.FormatFloat(rate, 'f', -1, 64),
 				Subject: template.BTCRateSubject,
 			},
 		})
+
+		if newErr != nil {
+			err = errors.Wrap(newErr, emailsResponse[i].Value+" did not receive the email")
+		}
 	}
 
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(context.Background(), status.Convert(err), w)
+		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
 	}
 }

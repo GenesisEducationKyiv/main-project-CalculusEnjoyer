@@ -3,7 +3,6 @@ package ctrl
 import (
 	"api/aerror"
 	"api/models"
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -22,9 +21,9 @@ func NewRateController(provider CurrencyProvider) *RateController {
 func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	response, err := rc.currencyGRPCClient.GetRate(&models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"})
+	response, err := rc.currencyGRPCClient.GetRate(&models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(context.Background(), status.Convert(err), w)
+		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
 		return
 	}
 

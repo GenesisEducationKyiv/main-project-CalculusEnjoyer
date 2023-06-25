@@ -5,8 +5,11 @@ import (
 	"api/config"
 	"api/models"
 	"context"
+	"log"
 	"storage/emails/messages/proto"
 	"strconv"
+
+	"google.golang.org/grpc/connectivity"
 
 	"github.com/pkg/errors"
 
@@ -15,15 +18,17 @@ import (
 
 type StorageGRPCClient struct {
 	conf config.Config
+	conn *grpc.ClientConn
 }
 
 func NewStorageGRPCClient(conf config.Config) *StorageGRPCClient {
-	return &StorageGRPCClient{conf: conf}
+	client := StorageGRPCClient{conf: conf}
+	client.conn = client.getConnection()
+	return &client
 }
 
 func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest) error {
-	conn := c.getConnection()
-	defer conn.Close()
+	conn := c.connection()
 
 	client := proto.NewStorageServiceClient(conn)
 
@@ -32,8 +37,7 @@ func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest) error {
 }
 
 func (c *StorageGRPCClient) GetAllEmails() ([]models.Email, error) {
-	conn := c.getConnection()
-	defer conn.Close()
+	conn := c.connection()
 
 	client := proto.NewStorageServiceClient(conn)
 
@@ -45,10 +49,19 @@ func (c *StorageGRPCClient) GetAllEmails() ([]models.Email, error) {
 	return protoEmailsToSlice(response), nil
 }
 
+func (c *StorageGRPCClient) connection() *grpc.ClientConn {
+	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
+		return c.conn
+	} else {
+		c.conn = c.getConnection()
+		return c.conn
+	}
+}
+
 func (c *StorageGRPCClient) getConnection() *grpc.ClientConn {
 	conn, err := grpc.Dial(c.conf.StorageNetwork+":"+strconv.Itoa(c.conf.StoragePort), grpc.WithInsecure())
 	if err != nil {
-		errors.Wrap(err, aerror.ErrGRPC.Error())
+		log.Printf("Failed to connect: %v", err)
 	}
 
 	return conn
