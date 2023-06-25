@@ -6,5 +6,5 @@ import (
 )
 
 type CurrencyProvider interface {
-	GetRate(request *models.RateRequest, cnx context.Context) (*models.RateResponse, error)
+	GetRate(request models.RateRequest, cnx context.Context) (*models.RateResponse, error)
 }

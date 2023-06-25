@@ -25,12 +25,12 @@ func NewCurrencyGRPCClient(conf config.Config) *CurrencyGRPCClient {
 	return &client
 }
 
-func (c *CurrencyGRPCClient) GetRate(request *models.RateRequest, cnx context.Context) (*models.RateResponse, error) {
+func (c *CurrencyGRPCClient) GetRate(request models.RateRequest, cnx context.Context) (*models.RateResponse, error) {
 	conn := c.connection()
 
 	client := proto.NewRateServiceClient(conn)
 
-	response, err := client.GetRate(cnx, modelRateToProto(request))
+	response, err := client.GetRate(cnx, modelRateToProto(&request))
 	if err != nil {
 		return nil, errors.Wrap(err, "can not get rate")
 	}

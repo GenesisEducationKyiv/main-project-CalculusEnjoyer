@@ -24,12 +24,12 @@ func NewEmailGRPCClient(conf config.Config) *EmailGRPCClient {
 	return &client
 }
 
-func (c *EmailGRPCClient) SendEmail(request models.SendEmailsRequest) error {
+func (c *EmailGRPCClient) SendEmail(request models.SendEmailsRequest, cnx context.Context) error {
 	conn := c.connection()
 
 	client := proto.NewEmailServiceClient(conn)
 
-	_, err := client.SendEmail(context.Background(), modelSendEmailstoProto(request))
+	_, err := client.SendEmail(cnx, modelSendEmailstoProto(request))
 
 	return err
 }

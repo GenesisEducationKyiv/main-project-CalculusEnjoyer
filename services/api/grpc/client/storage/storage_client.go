@@ -27,21 +27,21 @@ func NewStorageGRPCClient(conf config.Config) *StorageGRPCClient {
 	return &client
 }
 
-func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest) error {
+func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest, cnx context.Context) error {
 	conn := c.connection()
 
 	client := proto.NewStorageServiceClient(conn)
 
-	_, err := client.AddEmail(context.Background(), modelAddEmailToProto(request))
+	_, err := client.AddEmail(cnx, modelAddEmailToProto(request))
 	return err
 }
 
-func (c *StorageGRPCClient) GetAllEmails() ([]models.Email, error) {
+func (c *StorageGRPCClient) GetAllEmails(cnx context.Context) ([]models.Email, error) {
 	conn := c.connection()
 
 	client := proto.NewStorageServiceClient(conn)
 
-	response, err := client.GetAllEmails(context.Background(), &proto.GetAllEmailsRequest{})
+	response, err := client.GetAllEmails(cnx, &proto.GetAllEmailsRequest{})
 	if err != nil {
 		errors.Wrap(err, aerror.ErrGRPC.Error())
 	}

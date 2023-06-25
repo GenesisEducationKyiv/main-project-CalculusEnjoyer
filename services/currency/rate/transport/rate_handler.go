@@ -6,8 +6,6 @@ import (
 	"currency/rate/messages"
 	"currency/rate/messages/proto"
 
-	"google.golang.org/grpc/status"
-
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 
@@ -28,7 +26,7 @@ func NewGRPCServer(ep rate.Endpoints) proto.RateServiceServer {
 func (g *grpcServer) GetRate(ctx context.Context, r *proto.RateRequest) (*proto.RateResponse, error) {
 	_, rep, err := g.getRate.ServeGRPC(ctx, r)
 	if err != nil {
-		return nil, status.Error(status.Code(err), err.Error())
+		return nil, err
 	}
 	response := rep.(proto.RateResponse)
 	return &response, err
