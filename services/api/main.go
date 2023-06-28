@@ -31,9 +31,11 @@ func run() {
 		storage.NewStorageGRPCClient(conf))
 	rate := ctrl.NewRateController(currency.NewCurrencyGRPCClient(conf))
 
-	r.Get(rest.Api+rest.Rate, rate.GetRate)
-	r.Post(rest.Api+rest.AddEmails, email.AddEmail)
-	r.Post(rest.Api+rest.SendEmails, email.SendEmails)
+	r.Route(rest.Api, func(r chi.Router) {
+		r.Get(rest.Rate, rate.GetRate)
+		r.Post(rest.AddEmails, email.AddEmail)
+		r.Post(rest.SendEmails, email.SendEmails)
+	})
 
 	http.ListenAndServe(":"+strconv.Itoa(conf.Port), r)
 }

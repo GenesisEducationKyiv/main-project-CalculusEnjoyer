@@ -13,7 +13,7 @@ import (
 )
 
 func TestAddEmail(t *testing.T) {
-	mockConf := loadTestConf("TEST_ADD_EMAIL_STORAGE_PATH")
+	mockConf := loadTestConf("TEST_ADD_EMAIL_STORAGE_PATH", "../../.env.test")
 	clearTestFile(mockConf)
 	defer clearTestFile(mockConf)
 	fileOrchestrator := NewFileOrchestrator(mockConf)
@@ -45,7 +45,7 @@ func TestGetAllEmails(t *testing.T) {
 		"test3@gmail.com",
 	}
 	length := 3
-	mockConf := loadTestConf("TEST_GET_EMAILS_STORAGE_PATH")
+	mockConf := loadTestConf("TEST_GET_EMAILS_STORAGE_PATH", "../../.env.test")
 	fileOrchestrator := NewFileOrchestrator(mockConf)
 
 	emails, err := fileOrchestrator.GetAllRecords()
@@ -73,13 +73,13 @@ func TestReturnErrorWithWrongConf(t *testing.T) {
 
 	err = fileOrchestrator.WriteEmail(messages.Email{Value: "Test"})
 	if err == nil {
-		t.Fatalf("err == nil wile adding all emails")
+		t.Fatalf("err == nil while adding email")
 	}
 }
 
-func loadTestConf(path string) config.Config {
+func loadTestConf(path string, testEnvPath string) config.Config {
 	conf := config.Config{}
-	err := godotenv.Load("../../.env.test")
+	err := godotenv.Load(testEnvPath)
 	if err != nil {
 		log.Fatalf(errors.Wrap(err, "Can not load test config").Error())
 	}

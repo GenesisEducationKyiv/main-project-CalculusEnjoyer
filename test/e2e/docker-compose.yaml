@@ -3,7 +3,7 @@ services:
   currency:
     build:
       context: ../../services/currency
-      dockerfile: ./test/e2e/Dockerfile
+      dockerfile: ./Dockerfile
     ports:
       - "8083:8083"
 

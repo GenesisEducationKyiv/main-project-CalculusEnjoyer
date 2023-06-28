@@ -2,8 +2,8 @@ package rate
 
 import (
 	"currency/rate/messages"
-	"currency/rate/providsers/crypto"
-	mytime "currency/rate/providsers/time"
+	"currency/rate/providers/crypto"
+	mytime "currency/rate/providers/time"
 )
 
 type rateService struct {

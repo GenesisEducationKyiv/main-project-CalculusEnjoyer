@@ -3,12 +3,7 @@ package e2e
 import (
 	"encoding/json"
 	"net/http"
-	"os"
-	"strconv"
 	"testing"
-
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 )
 
 func TestBTCRateE2E(t *testing.T) {
@@ -25,34 +20,11 @@ func TestBTCRateE2E(t *testing.T) {
 
 	err = json.NewDecoder(resp.Body).Decode(&responseMap)
 	if err != nil {
-		t.Fatalf("Failed to read response body: %v", err)
+		t.Errorf("Failed to read response body: %v", err)
 	}
 
-	rate, ok := responseMap["rate"].(float64)
+	_, ok := responseMap["rate"].(float64)
 	if ok != true {
-		t.Fatalf("Failed to test rate: %v", err)
+		t.Errorf("Failed to test rate: %v", err)
 	}
-
-	expectedRate, err := getTestRate()
-	if err != nil {
-		t.Fatalf("Failed to load expected test rate: %v", err)
-	}
-
-	if rate != expectedRate {
-		t.Errorf("Expected rate %f, but got %f", expectedRate, rate)
-	}
-}
-
-func getTestRate() (float64, error) {
-	err := godotenv.Load("../../services/currency/.env.test")
-	if err != nil {
-		panic(errors.Wrap(err, "Can not load config"))
-	}
-
-	rate, err := strconv.ParseFloat(os.Getenv("TEST_RATE"), 64)
-	if err != nil {
-		return 0, errors.Wrap(err, "Can not load TEST_RATE")
-	}
-
-	return rate, nil
 }

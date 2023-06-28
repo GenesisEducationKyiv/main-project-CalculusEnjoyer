@@ -16,11 +16,11 @@ func TestNewRegexValidator(t *testing.T) {
 		{"", false},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.email, func(t *testing.T) {
-			ans := validator.Validate(tt.email)
-			if ans != tt.result {
-				t.Errorf("email: %s got %t, want %t", tt.email, ans, tt.result)
+	for _, testEmails := range tests {
+		t.Run(testEmails.email, func(t *testing.T) {
+			validationResult := validator.Validate(testEmails.email)
+			if validationResult != testEmails.result {
+				t.Errorf("email: %s got %t, want %t", testEmails.email, validationResult, testEmails.result)
 			}
 		})
 	}
