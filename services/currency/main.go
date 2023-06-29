@@ -4,8 +4,8 @@ import (
 	"currency/config"
 	"currency/rate"
 	"currency/rate/messages/proto"
-	"currency/rate/providsers/crypto"
-	"currency/rate/providsers/time"
+	"currency/rate/providers/crypto"
+	"currency/rate/providers/time"
 	"currency/rate/transport"
 	"log"
 	"net"
@@ -22,7 +22,7 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := rate.NewService(crypto.NewCoinGeckoRateProvider(conf), &time.SystemTime{})
+	service := rate.NewRateService(crypto.NewCoinGeckoRateProvider(conf), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))

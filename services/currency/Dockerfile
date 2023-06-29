@@ -1,4 +1,4 @@
-FROM golang:1.20 as build-stage
+FROM golang:1.20.5-alpine3.18 as build-stage
 ENV GO111MODULE=on
 RUN mkdir /build
 WORKDIR /build

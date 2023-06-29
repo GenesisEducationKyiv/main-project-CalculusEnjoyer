@@ -20,7 +20,7 @@ func NewFileOrchestrator(config config.Config) *FileOrchestrator {
 }
 
 func (o *FileOrchestrator) OpenCSVFile() (*os.File, error) {
-	file, err := os.OpenFile(o.StoragePath, os.O_APPEND|os.O_CREATE|os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(o.StoragePath, os.O_APPEND|os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
