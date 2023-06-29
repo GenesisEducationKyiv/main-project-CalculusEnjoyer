@@ -1,0 +1,23 @@
+version: '3'
+services:
+  currency:
+    build: ./currency
+    ports:
+      - 8083:8083
+
+  storage:
+    build: ./storage
+    ports:
+      - 8082:8082
+
+  email:
+    build: ./email
+    ports:
+      - 8081:8081
+
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    ports:
+      - 8080:8080
