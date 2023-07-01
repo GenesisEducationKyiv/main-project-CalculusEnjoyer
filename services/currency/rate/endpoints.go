@@ -11,13 +11,13 @@ type Endpoints struct {
 	GetRateEndpoint endpoint.Endpoint
 }
 
-func NewEndpointSet(svc RateService) Endpoints {
+func NewEndpointSet(svc BaseRateService) Endpoints {
 	return Endpoints{
 		GetRateEndpoint: MakeGetRateEndpoint(svc),
 	}
 }
 
-func MakeGetRateEndpoint(svc RateService) endpoint.Endpoint {
+func MakeGetRateEndpoint(svc BaseRateService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(messages.RateRequest)
 		result, err := svc.GetRate(req)

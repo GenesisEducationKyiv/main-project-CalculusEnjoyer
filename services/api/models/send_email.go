@@ -1,8 +1,10 @@
 package models
 
-import "email/dispatcher/executor/templates"
+import (
+	"email/dispatcher/messages"
+)
 
 type SendEmailsRequest struct {
 	Interceptor Email
-	Template    templates.EmailContent
+	Template    messages.EmailContent
 }

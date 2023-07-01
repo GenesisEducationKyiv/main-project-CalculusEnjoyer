@@ -2,16 +2,27 @@ package rate
 
 import (
 	"currency/rate/messages"
-	"currency/rate/providers/crypto"
-	mytime "currency/rate/providers/time"
+	"time"
 )
 
-type rateService struct {
-	timeProvider mytime.TimeProvider
-	rateProvider crypto.RateProvider
+type TimeProvider interface {
+	Now() time.Time
 }
 
-func NewRateService(rateProvider crypto.RateProvider, timeProvider mytime.TimeProvider) RateService {
+type RateProvider interface {
+	GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error)
+}
+
+type BaseRateService interface {
+	GetRate(currencies messages.RateRequest) (rate messages.RateResult, err error)
+}
+
+type rateService struct {
+	timeProvider TimeProvider
+	rateProvider RateProvider
+}
+
+func NewRateService(rateProvider RateProvider, timeProvider TimeProvider) BaseRateService {
 	return &rateService{timeProvider, rateProvider}
 }
 

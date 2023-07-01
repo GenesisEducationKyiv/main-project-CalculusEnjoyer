@@ -5,9 +5,10 @@ import (
 	"api/config"
 	"api/models"
 	"context"
-	"log"
 	"storage/emails/messages/proto"
 	"strconv"
+
+	"google.golang.org/grpc/credentials/insecure"
 
 	"google.golang.org/grpc/connectivity"
 
@@ -23,48 +24,57 @@ type StorageGRPCClient struct {
 
 func NewStorageGRPCClient(conf config.Config) *StorageGRPCClient {
 	client := StorageGRPCClient{conf: conf}
-	client.conn = client.getConnection()
+	client.conn, _ = openConnection(conf.StorageNetwork, conf.StoragePort)
 	return &client
 }
 
-func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest) error {
-	conn := c.connection()
+func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest, cnx context.Context) error {
+	conn, err := c.connection()
+	if err != nil {
+		return errors.Wrap(err, "failed to get connection")
+	}
 
 	client := proto.NewStorageServiceClient(conn)
 
-	_, err := client.AddEmail(context.Background(), modelAddEmailToProto(request))
+	_, err = client.AddEmail(cnx, modelAddEmailToProto(request))
 	return err
 }
 
-func (c *StorageGRPCClient) GetAllEmails() ([]models.Email, error) {
-	conn := c.connection()
+func (c *StorageGRPCClient) GetAllEmails(cnx context.Context) ([]models.Email, error) {
+	conn, err := c.connection()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get connection()")
+	}
 
 	client := proto.NewStorageServiceClient(conn)
 
-	response, err := client.GetAllEmails(context.Background(), &proto.GetAllEmailsRequest{})
+	response, err := client.GetAllEmails(cnx, &proto.GetAllEmailsRequest{})
 	if err != nil {
-		errors.Wrap(err, aerror.ErrGRPC.Error())
+		return nil, errors.Wrap(err, aerror.ErrGRPC.Error())
 	}
 
 	return protoEmailsToSlice(response), nil
 }
 
-func (c *StorageGRPCClient) connection() *grpc.ClientConn {
+func (c *StorageGRPCClient) connection() (*grpc.ClientConn, error) {
 	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
-		return c.conn
-	} else {
-		c.conn = c.getConnection()
-		return c.conn
+		return c.conn, nil
 	}
+
+	con, err := openConnection(c.conf.StorageNetwork, c.conf.StoragePort)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get conn")
+	}
+
+	c.conn = con
+	return c.conn, nil
 }
 
-func (c *StorageGRPCClient) getConnection() *grpc.ClientConn {
-	conn, err := grpc.Dial(c.conf.StorageNetwork+":"+strconv.Itoa(c.conf.StoragePort), grpc.WithInsecure())
-	if err != nil {
-		log.Printf("Failed to connect: %v", err)
-	}
+func openConnection(network string, port int) (*grpc.ClientConn, error) {
+	insecureHack := grpc.WithTransportCredentials(insecure.NewCredentials())
+	conn, err := grpc.Dial(network+":"+strconv.Itoa(port), insecureHack)
 
-	return conn
+	return conn, errors.Wrap(err, "failed to grpc connect")
 }
 
 func modelAddEmailToProto(request models.AddEmailRequest) *proto.AddEmailRequest {

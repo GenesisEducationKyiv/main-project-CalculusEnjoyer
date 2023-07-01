@@ -5,35 +5,46 @@ import (
 	"api/models"
 	"api/rest"
 	"api/template"
-	"api/validator"
-	"email/dispatcher/executor/templates"
+	"context"
+	"email/dispatcher/messages"
 	"net/http"
 	"strconv"
-
-	"github.com/pkg/errors"
-
-	"github.com/fullstorydev/grpchan/httpgrpc"
-	"google.golang.org/grpc/status"
 )
 
+type EmailValidator interface {
+	Validate(email string) bool
+}
+
+type EmailExecutor interface {
+	SendEmail(request models.SendEmailsRequest, cnx context.Context) error
+}
+
+type StorageOrchestrator interface {
+	AddEmail(request models.AddEmailRequest, cnx context.Context) error
+	GetAllEmails(cnx context.Context) ([]models.Email, error)
+}
+
 type EmailController struct {
-	emailValidator      validator.EmailValidator
+	emailValidator      EmailValidator
 	rateProvider        CurrencyProvider
 	emailExecutor       EmailExecutor
 	storageOrchestrator StorageOrchestrator
+	errTransformer      ErrorTransformer
 }
 
 func NewEmailController(
-	emailValidator validator.EmailValidator,
+	emailValidator EmailValidator,
 	rateProvider CurrencyProvider,
 	emailExecutor EmailExecutor,
 	storageOrchestrator StorageOrchestrator,
+	errTransformer ErrorTransformer,
 ) *EmailController {
 	return &EmailController{
 		emailValidator:      emailValidator,
 		rateProvider:        rateProvider,
 		emailExecutor:       emailExecutor,
 		storageOrchestrator: storageOrchestrator,
+		errTransformer:      errTransformer,
 	}
 }
 
@@ -42,7 +53,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, aerror.ErrRequest.Error(), http.StatusBadRequest)
+		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
 
@@ -52,41 +63,40 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.storageOrchestrator.AddEmail(models.AddEmailRequest{Email: models.Email{Value: email}})
+	err = e.storageOrchestrator.AddEmail(models.AddEmailRequest{Email: models.Email{Value: email}}, r.Context())
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
+		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
 }
 
-func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
+func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rateResp, err := e.rateProvider.GetRate(&models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
+	rateResp, err := e.rateProvider.GetRate(models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
 	if err != nil {
-		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
+		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
 
 	rate := rateResp.Rate
 
-	emailsResponse, err := e.storageOrchestrator.GetAllEmails()
+	emailsResponse, err := e.storageOrchestrator.GetAllEmails(r.Context())
+	if err != nil {
+		e.errTransformer.TransformToHTTPErr(err, w)
+	}
 
 	for i := range emailsResponse {
-		newErr := e.emailExecutor.SendEmail(models.SendEmailsRequest{
+		err = e.emailExecutor.SendEmail(models.SendEmailsRequest{
 			Interceptor: emailsResponse[i],
-			Template: templates.EmailContent{
+			Template: messages.EmailContent{
 				Body:    template.BTCRateString + strconv.FormatFloat(rate, 'f', -1, 64),
 				Subject: template.BTCRateSubject,
 			},
-		})
+		}, r.Context())
 
-		if newErr != nil {
-			err = errors.Wrap(newErr, emailsResponse[i].Value+" did not receive the email")
+		if err != nil {
+			e.errTransformer.TransformToHTTPErr(err, w)
 		}
-	}
-
-	if err != nil {
-		httpgrpc.DefaultErrorRenderer(r.Context(), status.Convert(err), w)
 	}
 }
