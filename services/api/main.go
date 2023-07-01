@@ -36,7 +36,7 @@ func run() {
 	r.Route(rest.Api, func(r chi.Router) {
 		r.Get(rest.Rate, rate.GetRate)
 		r.Post(rest.AddEmails, email.AddEmail)
-		r.Post(rest.SendEmails, email.SendEmails)
+		r.Post(rest.SendEmails, email.SendBTCRateEmails)
 	})
 
 	http.ListenAndServe(":"+strconv.Itoa(conf.Port), r)

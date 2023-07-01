@@ -1,17 +1,31 @@
 package ctrl
 
 import (
+	"api/aerror"
 	"api/models"
 	"api/rest"
 	"api/template"
-	"api/validator"
-	"email/dispatcher/executor/templates"
+	"context"
+	"email/dispatcher/messages"
 	"net/http"
 	"strconv"
 )
 
+type EmailValidator interface {
+	Validate(email string) bool
+}
+
+type EmailExecutor interface {
+	SendEmail(request models.SendEmailsRequest, cnx context.Context) error
+}
+
+type StorageOrchestrator interface {
+	AddEmail(request models.AddEmailRequest, cnx context.Context) error
+	GetAllEmails(cnx context.Context) ([]models.Email, error)
+}
+
 type EmailController struct {
-	emailValidator      validator.EmailValidator
+	emailValidator      EmailValidator
 	rateProvider        CurrencyProvider
 	emailExecutor       EmailExecutor
 	storageOrchestrator StorageOrchestrator
@@ -19,7 +33,7 @@ type EmailController struct {
 }
 
 func NewEmailController(
-	emailValidator validator.EmailValidator,
+	emailValidator EmailValidator,
 	rateProvider CurrencyProvider,
 	emailExecutor EmailExecutor,
 	storageOrchestrator StorageOrchestrator,
@@ -45,7 +59,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 
 	email := r.Form.Get(rest.KeyEmail)
 	if !e.emailValidator.Validate(email) {
-		e.errTransformer.TransformToHTTPErr(err, w)
+		http.Error(w, aerror.ErrInvalidEmail.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -56,7 +70,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
+func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	rateResp, err := e.rateProvider.GetRate(models.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
@@ -68,18 +82,21 @@ func (e *EmailController) SendEmails(w http.ResponseWriter, r *http.Request) {
 	rate := rateResp.Rate
 
 	emailsResponse, err := e.storageOrchestrator.GetAllEmails(r.Context())
+	if err != nil {
+		e.errTransformer.TransformToHTTPErr(err, w)
+	}
 
 	for i := range emailsResponse {
 		err = e.emailExecutor.SendEmail(models.SendEmailsRequest{
 			Interceptor: emailsResponse[i],
-			Template: templates.EmailContent{
+			Template: messages.EmailContent{
 				Body:    template.BTCRateString + strconv.FormatFloat(rate, 'f', -1, 64),
 				Subject: template.BTCRateSubject,
 			},
 		}, r.Context())
-	}
 
-	if err != nil {
-		e.errTransformer.TransformToHTTPErr(err, w)
+		if err != nil {
+			e.errTransformer.TransformToHTTPErr(err, w)
+		}
 	}
 }

@@ -3,8 +3,7 @@ package transport
 import (
 	"context"
 	"email/dispatcher"
-	"email/dispatcher/executor"
-	"email/dispatcher/executor/templates"
+	"email/dispatcher/messages"
 	"email/dispatcher/messages/proto"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
@@ -35,7 +34,7 @@ func (g grpcServer) SendEmail(ctx context.Context, request *proto.SendEmailReque
 
 func decodeGRPCSendEmailRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*proto.SendEmailRequest)
-	return executor.SendEmailRequest{Content: templates.EmailContent{Subject: req.Subject, Body: req.Body}, To: req.To}, nil
+	return messages.SendEmailRequest{Content: messages.EmailContent{Subject: req.Subject, Body: req.Body}, To: req.To}, nil
 }
 
 func decodeGRPCSendEmailResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {

@@ -1,4 +1,4 @@
-package templates
+package messages
 
 type EmailContent struct {
 	Body    string

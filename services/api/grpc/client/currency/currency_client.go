@@ -5,8 +5,9 @@ import (
 	"api/models"
 	"context"
 	"currency/rate/messages/proto"
-	"log"
 	"strconv"
+
+	"google.golang.org/grpc/credentials/insecure"
 
 	"google.golang.org/grpc/connectivity"
 
@@ -21,12 +22,15 @@ type CurrencyGRPCClient struct {
 
 func NewCurrencyGRPCClient(conf config.Config) *CurrencyGRPCClient {
 	client := CurrencyGRPCClient{conf: conf}
-	client.conn = client.getConnection()
+	client.conn, _ = openConnection(conf.CurrencyNetwork, conf.CurrencyPort)
 	return &client
 }
 
 func (c *CurrencyGRPCClient) GetRate(request models.RateRequest, cnx context.Context) (*models.RateResponse, error) {
-	conn := c.connection()
+	conn, err := c.connection()
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to get connection")
+	}
 
 	client := proto.NewRateServiceClient(conn)
 
@@ -38,22 +42,25 @@ func (c *CurrencyGRPCClient) GetRate(request models.RateRequest, cnx context.Con
 	return protoRateToModel(response), err
 }
 
-func (c *CurrencyGRPCClient) getConnection() *grpc.ClientConn {
-	conn, err := grpc.Dial(c.conf.CurrencyNetwork+":"+strconv.Itoa(c.conf.CurrencyPort), grpc.WithInsecure())
-	if err != nil {
-		log.Printf("Failed to connect: %v", err)
+func (c *CurrencyGRPCClient) connection() (*grpc.ClientConn, error) {
+	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
+		return c.conn, nil
 	}
 
-	return conn
+	con, err := openConnection(c.conf.CurrencyNetwork, c.conf.CurrencyPort)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get conn")
+	}
+
+	c.conn = con
+	return c.conn, nil
 }
 
-func (c *CurrencyGRPCClient) connection() *grpc.ClientConn {
-	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
-		return c.conn
-	} else {
-		c.conn = c.getConnection()
-		return c.conn
-	}
+func openConnection(network string, port int) (*grpc.ClientConn, error) {
+	insecureHack := grpc.WithTransportCredentials(insecure.NewCredentials())
+	conn, err := grpc.Dial(network+":"+strconv.Itoa(port), insecureHack)
+
+	return conn, errors.Wrap(err, "failed to grpc connect")
 }
 
 func protoRateToModel(response *proto.RateResponse) *models.RateResponse {

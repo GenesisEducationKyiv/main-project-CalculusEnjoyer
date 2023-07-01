@@ -2,9 +2,18 @@ package ctrl
 
 import (
 	"api/models"
+	"context"
 	"encoding/json"
 	"net/http"
 )
+
+type ErrorTransformer interface {
+	TransformToHTTPErr(err error, w http.ResponseWriter)
+}
+
+type CurrencyProvider interface {
+	GetRate(request models.RateRequest, cnx context.Context) (*models.RateResponse, error)
+}
 
 type RateController struct {
 	currencyGRPCClient CurrencyProvider
