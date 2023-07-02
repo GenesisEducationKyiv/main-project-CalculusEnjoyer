@@ -237,10 +237,10 @@ var file_storage_proto_goTypes = []interface{}{
 	(*GetAllEmailsResponse)(nil), // 3: messages.GetAllEmailsResponse
 }
 var file_storage_proto_depIdxs = []int32{
-	0, // 0: messages.StorageService.AddEmail:input_type -> messages.AddEmailRequest
-	2, // 1: messages.StorageService.GetAllEmails:input_type -> messages.GetAllEmailsRequest
-	1, // 2: messages.StorageService.AddEmail:output_type -> messages.AddEmailResponse
-	3, // 3: messages.StorageService.GetAllEmails:output_type -> messages.GetAllEmailsResponse
+	0, // 0: messages.StorageService.Add:input_type -> messages.AddEmailRequest
+	2, // 1: messages.StorageService.GetAll:input_type -> messages.GetAllEmailsRequest
+	1, // 2: messages.StorageService.Add:output_type -> messages.AddEmailResponse
+	3, // 3: messages.StorageService.GetAll:output_type -> messages.GetAllEmailsResponse
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

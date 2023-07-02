@@ -10,11 +10,11 @@ type TimeProvider interface {
 }
 
 type RateProvider interface {
-	GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error)
+	GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error)
 }
 
-type BaseRateService interface {
-	GetRate(currencies messages.RateRequest) (rate messages.RateResult, err error)
+type RateService interface {
+	GetRate(currencies messages.RateRequest) (messages.RateResult, error)
 }
 
 type rateService struct {
@@ -22,7 +22,7 @@ type rateService struct {
 	rateProvider RateProvider
 }
 
-func NewRateService(rateProvider RateProvider, timeProvider TimeProvider) BaseRateService {
+func NewRateService(rateProvider RateProvider, timeProvider TimeProvider) RateService {
 	return &rateService{timeProvider, rateProvider}
 }
 

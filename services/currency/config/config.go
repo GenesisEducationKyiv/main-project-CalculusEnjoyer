@@ -12,6 +12,9 @@ type Config struct {
 	Port         int
 	Network      string
 	CoinGekcoURL string
+	CoinApiURL   string
+	CoinApiKey   string
+	KunaURL      string
 }
 
 func LoadFromENV() Config {
@@ -29,6 +32,9 @@ func LoadFromENV() Config {
 
 	conf.CoinGekcoURL = os.Getenv("COINGEKCO_URL")
 	conf.Network = os.Getenv("NETWORK")
+	conf.CoinApiKey = os.Getenv("COIN_API_KEY")
+	conf.CoinApiURL = os.Getenv("COINAPI_URL")
+	conf.KunaURL = os.Getenv("KUNA_URL")
 
 	return conf
 }

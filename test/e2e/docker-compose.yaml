@@ -1,17 +1,29 @@
-version: '3'
 services:
   currency:
     build:
       context: ../../services/currency
       dockerfile: ./Dockerfile
     ports:
-      - "8083:8083"
+      - 8083
+    environment:
+      - PORT=8083
+      - NETWORK=tcp
+      - COINGEKCO_URL=https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=%s
+      - COINAPI_URL=https://rest.coinapi.io/v1/exchangerate/%v/%v
+      - COIN_API_KEY=FE1CB696-E794-4291-BECE-339379BA0726
+      - KUNA_URL=https://api.kuna.io/v4/markets/public/tickers?pairs=%s_%s
 
   api:
     build:
       context: ../../services
       dockerfile: ./api/Dockerfile
     ports:
-      - "8080:8080"
-    expose:
-      - 8080
+      - 8080:8080
+    environment:
+      - EMAIL_SERVICE_PORT=8081
+      - STORAGE_SERVICE_PORT=8082
+      - CURRENCY_SERVICE_PORT=8083
+      - EMAIL_NETWORK=email
+      - CURRENCY_NETWORK=currency
+      - STORAGE_NETWORK=storage
+      - PORT=8080

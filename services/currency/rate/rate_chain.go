@@ -1,0 +1,28 @@
+package rate
+
+import (
+	"currency/rate/messages"
+)
+
+type RateLink struct {
+	next     *RateLink
+	provider RateProvider
+}
+
+func NewRateLink(provider RateProvider) *RateLink {
+	return &RateLink{
+		provider: provider,
+	}
+}
+
+func (r *RateLink) SetNextLink(next *RateLink) {
+	r.next = next
+}
+
+func (r *RateLink) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+	rate, err := r.provider.GetExchangeRate(baseCurrency, targetCurrency)
+	if err != nil && r.next != nil {
+		return r.next.GetExchangeRate(baseCurrency, targetCurrency)
+	}
+	return rate, err
+}
