@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/pkg/errors"
 )
 
 type CoinGeckoRateProvider struct {
@@ -49,13 +47,7 @@ func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency mes
 	}
 	defer response.Body.Close()
 
-	rate, err := decodeRateResponse(response, convertedBase, convertedTarget)
-	if err != nil {
-		return cerror.ErrRateValue, errors.Wrap(err, "can not get rate from CoinGecko")
-	}
-
-	log.Printf("Getting rate from COINGECKO: %f", rate)
-	return rate, nil
+	return decodeRateResponse(response, convertedBase, convertedTarget)
 }
 
 func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyName string) (float64, error) {
@@ -71,6 +63,7 @@ func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyNam
 		return cerror.ErrRateValue, cerror.ErrRate
 	}
 
+	log.Printf("Getting rate from COINGECKO: %f", rate)
 	return rate, nil
 }
 
