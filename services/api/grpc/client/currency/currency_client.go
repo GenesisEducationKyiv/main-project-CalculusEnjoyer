@@ -2,9 +2,9 @@ package currency
 
 import (
 	"api/config"
-	"api/models"
+	"api/domain"
 	"context"
-	"currency/rate/messages/proto"
+	"currency/transport/proto"
 	"strconv"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,7 +26,7 @@ func NewCurrencyGRPCClient(conf config.Config) *CurrencyGRPCClient {
 	return &client
 }
 
-func (c *CurrencyGRPCClient) GetRate(request models.RateRequest, cnx context.Context) (*models.RateResponse, error) {
+func (c *CurrencyGRPCClient) GetRate(request domain.RateRequest, cnx context.Context) (*domain.RateResponse, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get connection")
@@ -63,13 +63,13 @@ func openConnection(network string, port int) (*grpc.ClientConn, error) {
 	return conn, errors.Wrap(err, "failed to grpc connect")
 }
 
-func protoRateToModel(response *proto.RateResponse) *models.RateResponse {
-	return &models.RateResponse{
+func protoRateToModel(response *proto.RateResponse) *domain.RateResponse {
+	return &domain.RateResponse{
 		Rate: response.Rate,
 	}
 }
 
-func modelRateToProto(request *models.RateRequest) *proto.RateRequest {
+func modelRateToProto(request *domain.RateRequest) *proto.RateRequest {
 	return &proto.RateRequest{
 		BaseCurrency:   request.BaseCurrency,
 		TargetCurrency: request.TargetCurrency,

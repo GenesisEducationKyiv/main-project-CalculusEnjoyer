@@ -2,7 +2,7 @@ package rate
 
 import (
 	"currency/cerror"
-	"currency/rate/messages"
+	domain2 "currency/domain"
 	"log"
 	"testing"
 	"time"
@@ -16,7 +16,7 @@ const (
 func TestGetRate(t *testing.T) {
 	srv := NewRateService(&stubRateProvider{}, &stubTimeProvider{})
 
-	rate, _ := srv.GetRate(messages.RateRequest{TargetCurrency: "bitcoin", BaseCurrency: "uah"})
+	rate, _ := srv.GetRate(domain2.RateRequest{TargetCurrency: "bitcoin", BaseCurrency: "uah"})
 
 	if rate.Rate != testRate {
 		log.Fatalf(`%s: %f != %d`, "wrong result", rate.Rate, testRate)
@@ -29,7 +29,7 @@ func TestGetRate(t *testing.T) {
 func TestGetErrRate(t *testing.T) {
 	srv := NewRateService(&stubErrorRateProvider{}, &stubTimeProvider{})
 
-	rate, err := srv.GetRate(messages.RateRequest{TargetCurrency: "bitcoin", BaseCurrency: "uah"})
+	rate, err := srv.GetRate(domain2.RateRequest{TargetCurrency: "bitcoin", BaseCurrency: "uah"})
 
 	if err == nil {
 		log.Fatalf(`%s: %d`, "error is nil while it must not", err)
@@ -44,7 +44,7 @@ func TestGetErrRate(t *testing.T) {
 
 type stubRateProvider struct{}
 
-func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (rate float64, err error) {
+func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency domain2.Currency) (rate float64, err error) {
 	return testRate, nil
 }
 
@@ -54,7 +54,7 @@ func (r *stubRateProvider) Name() string {
 
 type stubErrorRateProvider struct{}
 
-func (r *stubErrorRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (rate float64, err error) {
+func (r *stubErrorRateProvider) GetExchangeRate(baseCurrency, targetCurrency domain2.Currency) (rate float64, err error) {
 	return cerror.ErrRateValue, cerror.ErrRate
 }
 

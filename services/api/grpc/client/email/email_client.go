@@ -2,9 +2,9 @@ package email
 
 import (
 	"api/config"
-	"api/models"
+	"api/domain"
 	"context"
-	"email/dispatcher/messages/proto"
+	"email/transport/proto"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -26,7 +26,7 @@ func NewEmailGRPCClient(conf config.Config) *EmailGRPCClient {
 	return &client
 }
 
-func (c *EmailGRPCClient) SendEmail(request models.SendEmailsRequest, cnx context.Context) error {
+func (c *EmailGRPCClient) SendEmail(request domain.SendEmailsRequest, cnx context.Context) error {
 	conn, err := c.connection()
 	if err != nil {
 		return errors.Wrap(err, "can not get connection SendEmail")
@@ -60,7 +60,7 @@ func openConnection(network string, port int) (*grpc.ClientConn, error) {
 	return conn, errors.Wrap(err, "failed to grpc connect")
 }
 
-func modelSendEmailsToProto(request models.SendEmailsRequest) *proto.SendEmailRequest {
+func modelSendEmailsToProto(request domain.SendEmailsRequest) *proto.SendEmailRequest {
 	return &proto.SendEmailRequest{
 		Subject: request.Template.Subject,
 		Body:    request.Template.Body,

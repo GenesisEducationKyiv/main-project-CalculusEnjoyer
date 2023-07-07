@@ -1,7 +1,7 @@
 package rate
 
 import (
-	"currency/rate/messages"
+	"currency/domain"
 	"time"
 )
 
@@ -10,12 +10,12 @@ type TimeProvider interface {
 }
 
 type RateProvider interface {
-	GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error)
+	GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error)
 	Name() string
 }
 
 type RateService interface {
-	GetRate(currencies messages.RateRequest) (messages.RateResult, error)
+	GetRate(currencies domain.RateRequest) (domain.RateResult, error)
 }
 
 type rateService struct {
@@ -27,8 +27,8 @@ func NewRateService(rateProvider RateProvider, timeProvider TimeProvider) RateSe
 	return &rateService{timeProvider, rateProvider}
 }
 
-func (r *rateService) GetRate(currencies messages.RateRequest) (rate messages.RateResult, err error) {
+func (r *rateService) GetRate(currencies domain.RateRequest) (rate domain.RateResult, err error) {
 	btcRate, err := r.rateProvider.GetExchangeRate(currencies.BaseCurrency, currencies.TargetCurrency)
 
-	return messages.RateResult{Rate: btcRate, Timestamp: r.timeProvider.Now()}, err
+	return domain.RateResult{Rate: btcRate, Timestamp: r.timeProvider.Now()}, err
 }

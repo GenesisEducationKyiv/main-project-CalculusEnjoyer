@@ -3,7 +3,7 @@ package crypto
 import (
 	"currency/cerror"
 	"currency/config"
-	"currency/rate/messages"
+	"currency/domain"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,15 +14,15 @@ import (
 
 type KunaRateProvider struct {
 	kunaURL             string
-	supportedCurrencies map[messages.Currency]string
+	supportedCurrencies map[domain.Currency]string
 }
 
 type KunaRateProviderResponse map[string][]map[string]interface{}
 
 func NewKunaRateProvider(conf config.Config) *KunaRateProvider {
-	currencies := map[messages.Currency]string{
-		messages.BTC: "BTC",
-		messages.UAH: "UAH",
+	currencies := map[domain.Currency]string{
+		domain.BTC: "BTC",
+		domain.UAH: "UAH",
 	}
 
 	return &KunaRateProvider{
@@ -31,7 +31,7 @@ func NewKunaRateProvider(conf config.Config) *KunaRateProvider {
 	}
 }
 
-func (p *KunaRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+func (p *KunaRateProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	request, err := p.generateHTTPRequest(baseCurrency, targetCurrency)
 	if err != nil {
 		return cerror.ErrRateValue, errors.Wrap(err, "can not generate request to Kuna.io")
@@ -68,15 +68,7 @@ func (p *KunaRateProvider) extractRate(response *http.Response) (float64, error)
 	return float, nil
 }
 
-func (p *KunaRateProvider) currencyToString(currency messages.Currency) (string, error) {
-	result := p.supportedCurrencies[currency]
-	if result == "" {
-		return result, fmt.Errorf("%s is unsupported currency", string(currency))
-	}
-	return result, nil
-}
-
-func (p *KunaRateProvider) generateHTTPRequest(baseCurrency, targetCurrency messages.Currency) (*http.Request, error) {
+func (p *KunaRateProvider) generateHTTPRequest(baseCurrency, targetCurrency domain.Currency) (*http.Request, error) {
 	convertedBase, err := p.currencyToString(baseCurrency)
 	if err != nil {
 		return nil, err
@@ -105,4 +97,12 @@ func (p *KunaRateProvider) generateHTTPRequest(baseCurrency, targetCurrency mess
 	req.Header.Add("Accept", "application/json")
 
 	return req, nil
+}
+
+func (p *KunaRateProvider) currencyToString(currency domain.Currency) (string, error) {
+	result := p.supportedCurrencies[currency]
+	if result == "" {
+		return result, fmt.Errorf("%s is unsupported currency", string(currency))
+	}
+	return result, nil
 }

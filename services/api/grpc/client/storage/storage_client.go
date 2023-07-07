@@ -3,9 +3,9 @@ package storage
 import (
 	"api/aerror"
 	"api/config"
-	"api/models"
+	"api/domain"
 	"context"
-	"storage/emails/messages/proto"
+	"storage/transport/proto"
 	"strconv"
 
 	"google.golang.org/grpc/credentials/insecure"
@@ -28,7 +28,7 @@ func NewStorageGRPCClient(conf config.Config) *StorageGRPCClient {
 	return &client
 }
 
-func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest, cnx context.Context) error {
+func (c *StorageGRPCClient) AddEmail(request domain.AddEmailRequest, cnx context.Context) error {
 	conn, err := c.connection()
 	if err != nil {
 		return errors.Wrap(err, "failed to get connection")
@@ -40,7 +40,7 @@ func (c *StorageGRPCClient) AddEmail(request models.AddEmailRequest, cnx context
 	return err
 }
 
-func (c *StorageGRPCClient) GetAllEmails(cnx context.Context) ([]models.Email, error) {
+func (c *StorageGRPCClient) GetAllEmails(cnx context.Context) ([]domain.Email, error) {
 	conn, err := c.connection()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get connection()")
@@ -77,14 +77,14 @@ func openConnection(network string, port int) (*grpc.ClientConn, error) {
 	return conn, errors.Wrap(err, "failed to grpc connect")
 }
 
-func modelAddEmailToProto(request models.AddEmailRequest) *proto.AddEmailRequest {
+func modelAddEmailToProto(request domain.AddEmailRequest) *proto.AddEmailRequest {
 	return &proto.AddEmailRequest{
 		Email: request.Email.Value,
 	}
 }
 
-func protoEmailsToSlice(response *proto.GetAllEmailsResponse) []models.Email {
-	emails := make([]models.Email, len(response.Email))
+func protoEmailsToSlice(response *proto.GetAllEmailsResponse) []domain.Email {
+	emails := make([]domain.Email, len(response.Email))
 	for i, email := range emails {
 		email.Value = response.Email[i]
 		emails[i] = email

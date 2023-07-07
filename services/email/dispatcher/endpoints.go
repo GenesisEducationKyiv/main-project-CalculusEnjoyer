@@ -2,7 +2,7 @@ package dispatcher
 
 import (
 	"context"
-	"email/dispatcher/messages"
+	"email/domain"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -19,7 +19,7 @@ func NewEndpointSet(svc EmailService) Endpoints {
 
 func SendEmailEndpoint(svc EmailService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(messages.SendEmailRequest)
+		req := request.(domain.SendEmailRequest)
 		err := svc.SendEmail(req)
 		return nil, err
 	}
