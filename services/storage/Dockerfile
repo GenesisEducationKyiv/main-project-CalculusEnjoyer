@@ -17,6 +17,5 @@ WORKDIR /root/
 COPY --from=build-stage /build/main .
 COPY --from=build-stage /build/.env .
 COPY --from=build-stage /build/emails/source/emails.csv ./emails/source/emails.csv
-EXPOSE 8082
 
 CMD ["./main"]

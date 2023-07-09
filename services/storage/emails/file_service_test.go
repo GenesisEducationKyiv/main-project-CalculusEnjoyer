@@ -24,7 +24,7 @@ func TestGetAllEmails(t *testing.T) {
 	service := getFileService()
 	expectedEmails := []string{test1, test2, test3}
 
-	actualEmails, err := service.GetAllEmails()
+	actualEmails, err := service.GetAll()
 	if err != nil {
 		t.Fatalf(errors.Wrap(err, "can not get all emails").Error())
 	}
@@ -42,12 +42,12 @@ func TestAddEmail(t *testing.T) {
 	resetTestFile(t)
 	service := getFileService()
 
-	err := service.AddEmail(messages.Email{Value: emailToAdd})
+	err := service.Add(messages.Email{Value: emailToAdd})
 	if err != nil {
 		t.Fatalf(errors.Wrap(err, "can not add email").Error())
 	}
 
-	wroteEmails, err := service.GetAllEmails()
+	wroteEmails, err := service.GetAll()
 	if err != nil {
 		t.Fatalf(errors.Wrap(err, "can not get all emails").Error())
 	}
@@ -63,16 +63,16 @@ func TestAddSameEmailTwice(t *testing.T) {
 	resetTestFile(t)
 	service := getFileService()
 
-	err := service.AddEmail(messages.Email{Value: emailToAdd})
+	err := service.Add(messages.Email{Value: emailToAdd})
 	if err != nil {
 		t.Fatalf(errors.Wrap(err, "can not add email").Error())
 	}
-	err = service.AddEmail(messages.Email{Value: emailToAdd})
+	err = service.Add(messages.Email{Value: emailToAdd})
 	if !errors.Is(err, serror.ErrEmailAlreadyExists) {
 		t.Fatalf(errors.Wrap(err, "adding the same email twice did not produce an error").Error())
 	}
 
-	wroteEmails, err := service.GetAllEmails()
+	wroteEmails, err := service.GetAll()
 	if err != nil {
 		t.Fatalf(errors.Wrap(err, "can not get all emails").Error())
 	}
@@ -83,9 +83,9 @@ func TestAddSameEmailTwice(t *testing.T) {
 	resetTestFile(t)
 }
 
-func getFileService() StorageService {
+func getFileService() EmailRepository {
 	conf := loadTestConf()
-	return NewService(orchestrator.NewFileOrchestrator(conf))
+	return NewStorageRepository(orchestrator.NewFileOrchestrator(conf))
 }
 
 func resetTestFile(t *testing.T) {

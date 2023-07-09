@@ -44,14 +44,22 @@ func TestGetErrRate(t *testing.T) {
 
 type stubRateProvider struct{}
 
-func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error) {
+func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (rate float64, err error) {
 	return testRate, nil
+}
+
+func (r *stubRateProvider) Name() string {
+	return "Stub provider"
 }
 
 type stubErrorRateProvider struct{}
 
-func (r *stubErrorRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, err error) {
+func (r *stubErrorRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (rate float64, err error) {
 	return cerror.ErrRateValue, cerror.ErrRate
+}
+
+func (r *stubErrorRateProvider) Name() string {
+	return "Stub provider"
 }
 
 type stubTimeProvider struct{}

@@ -19,7 +19,7 @@ type EmailExecutor interface {
 	SendEmail(request models.SendEmailsRequest, cnx context.Context) error
 }
 
-type StorageOrchestrator interface {
+type EmailRepository interface {
 	AddEmail(request models.AddEmailRequest, cnx context.Context) error
 	GetAllEmails(cnx context.Context) ([]models.Email, error)
 }
@@ -28,7 +28,7 @@ type EmailController struct {
 	emailValidator      EmailValidator
 	rateProvider        CurrencyProvider
 	emailExecutor       EmailExecutor
-	storageOrchestrator StorageOrchestrator
+	storageOrchestrator EmailRepository
 	errTransformer      ErrorTransformer
 }
 
@@ -36,7 +36,7 @@ func NewEmailController(
 	emailValidator EmailValidator,
 	rateProvider CurrencyProvider,
 	emailExecutor EmailExecutor,
-	storageOrchestrator StorageOrchestrator,
+	storageOrchestrator EmailRepository,
 	errTransformer ErrorTransformer,
 ) *EmailController {
 	return &EmailController{
@@ -51,8 +51,7 @@ func NewEmailController(
 func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	err := r.ParseForm()
-	if err != nil {
+	if err := r.ParseForm(); err != nil {
 		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
@@ -63,8 +62,8 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = e.storageOrchestrator.AddEmail(models.AddEmailRequest{Email: models.Email{Value: email}}, r.Context())
-	if err != nil {
+	request := models.AddEmailRequest{Email: models.Email{Value: email}}
+	if err := e.storageOrchestrator.AddEmail(request, r.Context()); err != nil {
 		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
@@ -78,7 +77,6 @@ func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Reque
 		e.errTransformer.TransformToHTTPErr(err, w)
 		return
 	}
-
 	rate := rateResp.Rate
 
 	emailsResponse, err := e.storageOrchestrator.GetAllEmails(r.Context())
@@ -87,16 +85,18 @@ func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Reque
 	}
 
 	for i := range emailsResponse {
-		err = e.emailExecutor.SendEmail(models.SendEmailsRequest{
-			Interceptor: emailsResponse[i],
-			Template: messages.EmailContent{
-				Body:    template.BTCRateString + strconv.FormatFloat(rate, 'f', -1, 64),
-				Subject: template.BTCRateSubject,
-			},
-		}, r.Context())
-
-		if err != nil {
+		if err = e.emailExecutor.SendEmail(generateRateEmail(emailsResponse[i], rate), r.Context()); err != nil {
 			e.errTransformer.TransformToHTTPErr(err, w)
 		}
+	}
+}
+
+func generateRateEmail(interceptor models.Email, rate float64) models.SendEmailsRequest {
+	return models.SendEmailsRequest{
+		Interceptor: interceptor,
+		Template: messages.EmailContent{
+			Body:    template.BTCRateString + strconv.FormatFloat(rate, 'f', -1, 64),
+			Subject: template.BTCRateSubject,
+		},
 	}
 }

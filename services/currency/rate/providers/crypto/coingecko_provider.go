@@ -3,24 +3,42 @@ package crypto
 import (
 	"currency/cerror"
 	"currency/config"
+	"currency/rate/messages"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
-type CoinGeckoRateProvider struct{ coinGeckoURL string }
+type CoinGeckoRateProvider struct {
+	coinGeckoURL        string
+	supportedCurrencies map[messages.Currency]string
+}
 
 type CoinGeckoResponse map[string]map[string]float64
 
 func NewCoinGeckoRateProvider(conf config.Config) *CoinGeckoRateProvider {
+	currencies := map[messages.Currency]string{
+		messages.BTC: "bitcoin",
+		messages.UAH: "uah",
+	}
+
 	return &CoinGeckoRateProvider{
 		conf.CoinGekcoURL,
+		currencies,
 	}
 }
 
-func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency string) (rate float64, errBodyClose error) {
-	url := fmt.Sprintf(p.coinGeckoURL, baseCurrency, targetCurrency)
+func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+	convertedBase, err := p.currencyToString(baseCurrency)
+	if err != nil {
+		return cerror.ErrRateValue, err
+	}
+
+	convertedTarget, err := p.currencyToString(targetCurrency)
+	if err != nil {
+		return cerror.ErrRateValue, err
+	}
+	url := fmt.Sprintf(p.coinGeckoURL, convertedBase, convertedTarget)
 
 	response, err := http.Get(url)
 	if err != nil || response.StatusCode != http.StatusOK {
@@ -28,14 +46,33 @@ func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency str
 	}
 	defer response.Body.Close()
 
+	return decodeRateResponse(response, convertedBase, convertedTarget)
+}
+
+func (p *CoinGeckoRateProvider) Name() string {
+	return "COINGECKO"
+}
+
+func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyName string) (float64, error) {
 	var data CoinGeckoResponse
-	err = json.NewDecoder(response.Body).Decode(&data)
+	err := json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		return cerror.ErrRateValue, cerror.ErrDecode
+		return cerror.ErrRateValue, err
 	}
 
-	rates := data[strings.ToLower(baseCurrency)]
-	rate = rates[strings.ToLower(targetCurrency)]
+	rates := data[baseCurrencyName]
+	rate, ok := rates[targetCurrencyName]
+	if !ok {
+		return cerror.ErrRateValue, cerror.ErrRate
+	}
 
 	return rate, nil
+}
+
+func (p *CoinGeckoRateProvider) currencyToString(currency messages.Currency) (string, error) {
+	result := p.supportedCurrencies[currency]
+	if result == "" {
+		return result, fmt.Errorf("%s is unsupported currency", string(currency))
+	}
+	return result, nil
 }

@@ -21,7 +21,7 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := emails.NewService(orchestrator.NewFileOrchestrator(conf))
+	service := emails.NewStorageRepository(orchestrator.NewFileOrchestrator(conf))
 	eps := emails.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))

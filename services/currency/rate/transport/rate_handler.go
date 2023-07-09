@@ -34,7 +34,7 @@ func (g *grpcServer) GetRate(ctx context.Context, r *proto.RateRequest) (*proto.
 
 func decodeGRPCRateRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*proto.RateRequest)
-	return messages.RateRequest{BaseCurrency: req.BaseCurrency, TargetCurrency: req.TargetCurrency}, nil
+	return messages.RateRequest{BaseCurrency: messages.Currency(req.BaseCurrency), TargetCurrency: messages.Currency(req.TargetCurrency)}, nil
 }
 
 func decodeGRPCGetResponse(_ context.Context, grpcReply interface{}) (interface{}, error) {

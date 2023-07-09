@@ -22,7 +22,7 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := rate.NewRateService(crypto.NewCoinGeckoRateProvider(conf), &time.SystemTime{})
+	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf), conf, &time.SystemTime{}), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
@@ -35,4 +35,15 @@ func run() {
 	if err = baseServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
+}
+
+func bootstrapRateProviders(conf config.Config) *rate.RateLink {
+	kunaLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewKunaRateProvider(conf), log.Default()))
+	coinApiLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinAPIProvider(conf), log.Default()))
+	coinGeckoLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinGeckoRateProvider(conf), log.Default()))
+
+	kunaLink.SetNextLink(coinApiLink)
+	coinApiLink.SetNextLink(coinGeckoLink)
+
+	return kunaLink
 }

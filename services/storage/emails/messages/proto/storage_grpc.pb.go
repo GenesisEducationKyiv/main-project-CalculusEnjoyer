@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	StorageService_AddEmail_FullMethodName     = "/messages.StorageService/AddEmail"
-	StorageService_GetAllEmails_FullMethodName = "/messages.StorageService/GetAllEmails"
+	StorageService_AddEmail_FullMethodName     = "/messages.StorageService/Add"
+	StorageService_GetAllEmails_FullMethodName = "/messages.StorageService/GetAll"
 )
 
 // StorageServiceClient is the client API for StorageService service.
@@ -70,10 +70,10 @@ type UnimplementedStorageServiceServer struct {
 }
 
 func (UnimplementedStorageServiceServer) AddEmail(context.Context, *AddEmailRequest) (*AddEmailResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddEmail not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
 }
 func (UnimplementedStorageServiceServer) GetAllEmails(context.Context, *GetAllEmailsRequest) (*GetAllEmailsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllEmails not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
 }
 
 // UnsafeStorageServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -131,11 +131,11 @@ var StorageService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*StorageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AddEmail",
+			MethodName: "Add",
 			Handler:    _StorageService_AddEmail_Handler,
 		},
 		{
-			MethodName: "GetAllEmails",
+			MethodName: "GetAll",
 			Handler:    _StorageService_GetAllEmails_Handler,
 		},
 	},
