@@ -6,7 +6,6 @@ import (
 	"currency/rate/messages"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -50,6 +49,10 @@ func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency mes
 	return decodeRateResponse(response, convertedBase, convertedTarget)
 }
 
+func (p *CoinGeckoRateProvider) Name() string {
+	return "COINGECKO"
+}
+
 func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyName string) (float64, error) {
 	var data CoinGeckoResponse
 	err := json.NewDecoder(resp.Body).Decode(&data)
@@ -63,7 +66,6 @@ func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyNam
 		return cerror.ErrRateValue, cerror.ErrRate
 	}
 
-	log.Printf("Getting rate from COINGECKO: %f", rate)
 	return rate, nil
 }
 

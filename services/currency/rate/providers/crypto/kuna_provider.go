@@ -6,7 +6,6 @@ import (
 	"currency/rate/messages"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -47,6 +46,10 @@ func (p *KunaRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages
 	return p.extractRate(response)
 }
 
+func (p *KunaRateProvider) Name() string {
+	return "KUNA"
+}
+
 func (p *KunaRateProvider) extractRate(response *http.Response) (float64, error) {
 	var data KunaRateProviderResponse
 	err := json.NewDecoder(response.Body).Decode(&data)
@@ -62,7 +65,6 @@ func (p *KunaRateProvider) extractRate(response *http.Response) (float64, error)
 		return cerror.ErrRateValue, errors.Wrap(err, "failed to decode Kuna response to float")
 	}
 
-	log.Printf("Getting rate from KUNA: %f", float)
 	return float, nil
 }
 

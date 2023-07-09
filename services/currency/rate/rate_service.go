@@ -11,6 +11,7 @@ type TimeProvider interface {
 
 type RateProvider interface {
 	GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error)
+	Name() string
 }
 
 type RateService interface {

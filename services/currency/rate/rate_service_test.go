@@ -48,10 +48,18 @@ func (r *stubRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages
 	return testRate, nil
 }
 
+func (r *stubRateProvider) Name() string {
+	return "Stub provider"
+}
+
 type stubErrorRateProvider struct{}
 
 func (r *stubErrorRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (rate float64, err error) {
 	return cerror.ErrRateValue, cerror.ErrRate
+}
+
+func (r *stubErrorRateProvider) Name() string {
+	return "Stub provider"
 }
 
 type stubTimeProvider struct{}

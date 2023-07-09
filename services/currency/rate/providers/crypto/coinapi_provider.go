@@ -6,7 +6,6 @@ import (
 	"currency/rate/messages"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -68,6 +67,10 @@ func (p *CoinAPIProvider) generateHTTPRequest(baseCurrency, targetCurrency messa
 	return req, nil
 }
 
+func (p *CoinAPIProvider) Name() string {
+	return "COINAPI"
+}
+
 func (p *CoinAPIProvider) generateEndpoint(baseCurrency, targetCurrency messages.Currency) (string, error) {
 	convertedBase, err := p.currencyToString(baseCurrency)
 	if err != nil {
@@ -93,7 +96,6 @@ func (p *CoinAPIProvider) extractRate(response *http.Response) (float64, error) 
 		return cerror.ErrRateValue, err
 	}
 
-	log.Printf("Getting rate from COINAPI: %f", data.Rate)
 	return data.Rate, nil
 }
 

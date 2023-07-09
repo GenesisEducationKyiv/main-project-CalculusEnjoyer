@@ -26,3 +26,7 @@ func (r *RateLink) GetExchangeRate(baseCurrency, targetCurrency messages.Currenc
 	}
 	return rate, err
 }
+
+func (r *RateLink) Name() string {
+	return r.provider.Name()
+}

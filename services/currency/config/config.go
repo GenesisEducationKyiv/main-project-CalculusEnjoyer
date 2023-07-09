@@ -3,18 +3,20 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
 
 type Config struct {
-	Port         int
-	Network      string
-	CoinGekcoURL string
-	CoinApiURL   string
-	CoinApiKey   string
-	KunaURL      string
+	Port           int
+	Network        string
+	CoinGekcoURL   string
+	CoinApiURL     string
+	CoinApiKey     string
+	KunaURL        string
+	CacheValidTime time.Duration
 }
 
 func LoadFromENV() Config {
@@ -29,6 +31,12 @@ func LoadFromENV() Config {
 		panic(errors.Wrap(err, "Can not load PORT"))
 	}
 	conf.Port = port
+
+	cachedTime, err := strconv.ParseInt(os.Getenv("RATE_CACHE_TIME"), 10, 64)
+	if err != nil {
+		panic(errors.Wrap(err, "Can not load PORT"))
+	}
+	conf.CacheValidTime = time.Duration(cachedTime * int64(time.Millisecond))
 
 	conf.CoinGekcoURL = os.Getenv("COINGEKCO_URL")
 	conf.Network = os.Getenv("NETWORK")

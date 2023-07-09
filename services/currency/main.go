@@ -22,7 +22,7 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := rate.NewRateService(bootstrapRateProviders(conf), &time.SystemTime{})
+	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf), conf, &time.SystemTime{}), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
@@ -38,9 +38,9 @@ func run() {
 }
 
 func bootstrapRateProviders(conf config.Config) *rate.RateLink {
-	kunaLink := rate.NewRateLink(crypto.NewKunaRateProvider(conf))
-	coinApiLink := rate.NewRateLink(crypto.NewCoinAPIProvider(conf))
-	coinGeckoLink := rate.NewRateLink(crypto.NewCoinGeckoRateProvider(conf))
+	kunaLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewKunaRateProvider(conf), log.Default()))
+	coinApiLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinAPIProvider(conf), log.Default()))
+	coinGeckoLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinGeckoRateProvider(conf), log.Default()))
 
 	kunaLink.SetNextLink(coinApiLink)
 	coinApiLink.SetNextLink(coinGeckoLink)
