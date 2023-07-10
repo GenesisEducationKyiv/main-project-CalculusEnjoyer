@@ -1,4 +1,4 @@
-package client
+package json
 
 import (
 	"net/http"
@@ -8,15 +8,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type GRPCErrHTTPTransformer struct{}
+type GRPCErrHTTPPresenter struct{}
 
-func (t *GRPCErrHTTPTransformer) TransformToHTTPErr(err error, w http.ResponseWriter) {
+type ErrorHTTPResponse struct {
+	Error string `json:"error"`
+}
+
+func (t *GRPCErrHTTPPresenter) PresentHTTPErr(err error, w http.ResponseWriter) {
 	code := HTTPStatusFromCode(status.Code(err))
 	message := status.Convert(err).Message()
 	if message == "" {
 		message = err.Error()
 	}
-	http.Error(w, message, code)
+
+	w.WriteHeader(code)
+	DecodeJSONResponse(w, ErrorHTTPResponse{Error: message})
 }
 
 func HTTPStatusFromCode(code codes.Code) int {

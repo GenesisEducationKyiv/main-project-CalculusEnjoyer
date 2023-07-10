@@ -3,12 +3,15 @@ package controller
 import (
 	"api/domain"
 	"context"
-	"encoding/json"
 	"net/http"
 )
 
-type RateErrorTransformer interface {
-	TransformToHTTPErr(err error, w http.ResponseWriter)
+type RateErrorPresenter interface {
+	PresentHTTPErr(err error, w http.ResponseWriter)
+}
+
+type RatePresenter interface {
+	SuccessfulRateResponse(w http.ResponseWriter, response domain.RateResponse)
 }
 
 type RateService interface {
@@ -16,27 +19,21 @@ type RateService interface {
 }
 
 type RateController struct {
-	rateService    RateService
-	errTransformer RateErrorTransformer
+	rateService  RateService
+	errPresenter RateErrorPresenter
+	presenter    RatePresenter
 }
 
-func NewRateController(rateService RateService, errTransformer RateErrorTransformer) *RateController {
-	return &RateController{rateService: rateService, errTransformer: errTransformer}
+func NewRateController(rateService RateService, errPresenter RateErrorPresenter, presenter RatePresenter) *RateController {
+	return &RateController{rateService: rateService, errPresenter: errPresenter, presenter: presenter}
 }
 
 func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	response, err := rc.rateService.GetRate(domain.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
 	if err != nil {
-		rc.errTransformer.TransformToHTTPErr(err, w)
+		rc.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(response)
-
-	if err != nil {
-		rc.errTransformer.TransformToHTTPErr(err, w)
-		return
-	}
+	rc.presenter.SuccessfulRateResponse(w, *response)
 }

@@ -2,12 +2,12 @@ package main
 
 import (
 	"api/config"
-	"api/grpc/client"
 	"api/grpc/client/currency"
 	"api/grpc/client/email"
 	"api/grpc/client/storage"
 	"api/rest"
 	"api/rest/controller"
+	"api/rest/presenter/json"
 	"api/service"
 	"api/validator"
 	"net/http"
@@ -35,8 +35,12 @@ func run() {
 
 	email := controller.NewEmailController(
 		emailService,
-		&client.GRPCErrHTTPTransformer{})
-	rate := controller.NewRateController(service.NewRateServiece(currency.NewCurrencyGRPCClient(conf)), &client.GRPCErrHTTPTransformer{})
+		&json.GRPCErrHTTPPresenter{},
+		&json.JSONEmailPresenter{})
+	rate := controller.NewRateController(
+		service.NewRateServiece(currency.NewCurrencyGRPCClient(conf)),
+		&json.GRPCErrHTTPPresenter{},
+		&json.JSONRatePresenter{})
 
 	r.Route(rest.Api, func(r chi.Router) {
 		r.Get(rest.Rate, rate.GetRate)

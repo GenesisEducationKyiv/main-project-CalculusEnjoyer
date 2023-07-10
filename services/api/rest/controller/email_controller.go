@@ -7,8 +7,13 @@ import (
 	"net/http"
 )
 
-type EmailErrorTransformer interface {
-	TransformToHTTPErr(err error, w http.ResponseWriter)
+type EmailErrorPresenter interface {
+	PresentHTTPErr(err error, w http.ResponseWriter)
+}
+
+type EmailPresenter interface {
+	SuccessfulEmailsSending(w http.ResponseWriter)
+	SuccessfullyAddEmail(w http.ResponseWriter)
 }
 
 type EmailService interface {
@@ -17,41 +22,44 @@ type EmailService interface {
 }
 
 type EmailController struct {
-	emailService   EmailService
-	errTransformer EmailErrorTransformer
+	emailService EmailService
+	errPresenter EmailErrorPresenter
+	presenter    EmailPresenter
 }
 
 func NewEmailController(
 	emailService EmailService,
-	errTransformer EmailErrorTransformer,
+	errPresenter EmailErrorPresenter,
+	presenter EmailPresenter,
 ) *EmailController {
 	return &EmailController{
-		emailService:   emailService,
-		errTransformer: errTransformer,
+		emailService: emailService,
+		errPresenter: errPresenter,
+		presenter:    presenter,
 	}
 }
 
 func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	if err := r.ParseForm(); err != nil {
-		e.errTransformer.TransformToHTTPErr(err, w)
+		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
 
 	email := r.Form.Get(rest.KeyEmail)
 
 	if err := e.emailService.AddEmail(domain.AddEmailRequest{Email: domain.Email{Value: email}}, r.Context()); err != nil {
-		e.errTransformer.TransformToHTTPErr(err, w)
+		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
+
+	e.presenter.SuccessfullyAddEmail(w)
 }
 
 func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	if err := e.emailService.SendRateEmails(r.Context()); err != nil {
-		e.errTransformer.TransformToHTTPErr(err, w)
+		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
+
+	e.presenter.SuccessfulEmailsSending(w)
 }
