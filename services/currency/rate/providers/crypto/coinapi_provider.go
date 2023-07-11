@@ -22,6 +22,9 @@ func NewCoinAPIProvider(conf config.Config) *CoinAPIProvider {
 	currencies := map[domain.Currency]string{
 		domain.BTC: "BTC",
 		domain.UAH: "UAH",
+		domain.ETH: "ETH",
+		domain.USD: "USD",
+		domain.XMR: "XMR",
 	}
 
 	return &CoinAPIProvider{

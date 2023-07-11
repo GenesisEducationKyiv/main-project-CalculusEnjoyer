@@ -22,7 +22,7 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf), conf, &time.SystemTime{}), &time.SystemTime{})
+	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf), conf), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))

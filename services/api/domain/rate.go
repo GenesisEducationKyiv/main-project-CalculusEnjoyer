@@ -1,8 +1,8 @@
 package domain
 
 type RateRequest struct {
-	BaseCurrency   string
-	TargetCurrency string
+	BaseCurrency   Currency
+	TargetCurrency Currency
 }
 
 type RateResponse struct {

@@ -6,6 +6,7 @@ require (
 	github.com/go-kit/kit v0.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/matthewmcnew/archtest v0.0.0-20191104172020-f1b53a45c22d
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0

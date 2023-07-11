@@ -23,6 +23,9 @@ func NewKunaRateProvider(conf config.Config) *KunaRateProvider {
 	currencies := map[domain.Currency]string{
 		domain.BTC: "BTC",
 		domain.UAH: "UAH",
+		domain.ETH: "ETH",
+		domain.USD: "USD",
+		domain.XMR: "XMR",
 	}
 
 	return &KunaRateProvider{
@@ -58,7 +61,14 @@ func (p *KunaRateProvider) extractRate(response *http.Response) (float64, error)
 	}
 
 	pair := data["data"]
-	rate := pair[0]["price"].(string)
+	if len(pair) == 0 {
+		return cerror.ErrRateValue, cerror.ErrDecode
+	}
+
+	rate, ok := pair[0]["price"].(string)
+	if !ok {
+		return cerror.ErrRateValue, cerror.ErrDecode
+	}
 
 	float, err := strconv.ParseFloat(rate, 64)
 	if err != nil {

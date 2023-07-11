@@ -20,6 +20,9 @@ func NewCoinGeckoRateProvider(conf config.Config) *CoinGeckoRateProvider {
 	currencies := map[domain.Currency]string{
 		domain.BTC: "bitcoin",
 		domain.UAH: "uah",
+		domain.ETH: "eth",
+		domain.USD: "usd",
+		domain.XMR: "xmr",
 	}
 
 	return &CoinGeckoRateProvider{
