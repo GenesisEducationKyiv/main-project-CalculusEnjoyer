@@ -1,0 +1,83 @@
+{
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "default-vhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "default-vhost"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "log",
+      "vhost": "default-vhost",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "DEBUG",
+      "vhost": "default-vhost",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "INFO",
+      "vhost": "default-vhost",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "ERROR",
+      "vhost": "default-vhost",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "log",
+      "vhost": "default-vhost",
+      "destination": "DEBUG",
+      "destination_type": "queue",
+      "routing_key": "DEBUG",
+      "arguments": {}
+    },
+    {
+      "source": "log",
+      "vhost": "default-vhost",
+      "destination": "INFO",
+      "destination_type": "queue",
+      "routing_key": "INFO",
+      "arguments": {}
+    },
+    {
+      "source": "log",
+      "vhost": "default-vhost",
+      "destination": "ERROR",
+      "destination_type": "queue",
+      "routing_key": "ERROR",
+      "arguments": {}
+    }
+  ]
+}

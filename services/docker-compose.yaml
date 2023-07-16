@@ -1,4 +1,23 @@
 services:
+
+  rabbit:
+    restart: unless-stopped
+    image: rabbitmq:3.9.29-management
+    container_name: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - type: bind
+        source: ./rabbit/rabbitmq-enabled-plugins
+        target: /etc/rabbitmq/enabled_plugins
+      - type: bind
+        source: ./rabbit/rabbitmq.config
+        target: /etc/rabbitmq/rabbitmq.config
+      - type: bind
+        source: ./rabbit/rabbitmq-defs.json
+
+        target: /etc/rabbitmq/rabbitmq-defs.json
   currency:
     restart: unless-stopped
     build: ./currency
@@ -12,6 +31,7 @@ services:
       - COIN_API_KEY=FE1CB696-E794-4291-BECE-339379BA0726
       - KUNA_URL=https://api.kuna.io/v4/markets/public/tickers?pairs=%s_%s
       - RATE_CACHE_TIME=5000
+      - AMQP_URL=amqp://guest:guest@rabbit:5672/default-vhost
 
   storage:
     restart: unless-stopped
