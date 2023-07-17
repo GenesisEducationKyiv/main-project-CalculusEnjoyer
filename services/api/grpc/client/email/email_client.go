@@ -3,6 +3,7 @@ package email
 import (
 	"api/config"
 	"api/domain"
+	"api/logger"
 	"context"
 	"email/transport/proto"
 	"strconv"
@@ -28,7 +29,9 @@ func NewEmailGRPCClient(conf config.Config) *EmailGRPCClient {
 
 func (c *EmailGRPCClient) SendEmail(request domain.SendEmailsRequest, cnx context.Context) error {
 	conn, err := c.connection()
+	logger.DefaultLog(logger.DEBUG, "trying to send emails from gRPC client")
 	if err != nil {
+		logger.DefaultLog(logger.ERROR, "failed to send emails from gRPC client")
 		return errors.Wrap(err, "can not get connection SendEmail")
 	}
 

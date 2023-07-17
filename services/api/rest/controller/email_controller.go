@@ -2,9 +2,9 @@ package controller
 
 import (
 	"api/domain"
+	"api/logger"
 	"api/rest"
 	"context"
-	"currency/logger"
 	"net/http"
 )
 
@@ -59,7 +59,9 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on send email endpoint")
 	if err := e.emailService.SendRateEmails(r.Context()); err != nil {
+		logger.DefaultLog(logger.ERROR, "failed to send emails")
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}

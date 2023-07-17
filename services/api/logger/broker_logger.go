@@ -4,10 +4,11 @@ import (
 	"api/config"
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/segmentio/kafka-go"
 	"log"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
 )
 
 type TimeProvider interface {
@@ -36,8 +37,16 @@ func (b *BrokerLogger) Init() {
 	}
 }
 
+func (b *BrokerLogger) Log(level LogLevel, message string) {
+	log.Printf(b.createLogMessage(level, message))
+	err := b.publish(level, message)
+	if err != nil {
+		log.Printf(err.Error())
+	}
+}
+
 func (b *BrokerLogger) getConnection() (*kafka.Conn, error) {
-	if b.conn != nil {
+	if b.conn != nil && b.checkForHealth() {
 		return b.conn, nil
 	}
 
@@ -51,16 +60,20 @@ func (b *BrokerLogger) getConnection() (*kafka.Conn, error) {
 	return conn, nil
 }
 
-func (b *BrokerLogger) Log(level LogLevel, message string) {
-	log.Printf(b.createLogMessage(level, message))
-	err := b.publish(level, message)
-	if err != nil {
-		log.Printf(err.Error())
+func (b *BrokerLogger) checkForHealth() bool {
+	if _, err := b.conn.Brokers(); err != nil {
+		return false
 	}
+	return true
 }
 
 func (b *BrokerLogger) publish(level LogLevel, message string) error {
-	_, err := b.conn.WriteMessages(b.createKafkaMessage(level, message))
+	conn, err := b.getConnection()
+	if err != nil {
+		return errors.Wrap(err, "can not access the connection")
+	}
+
+	_, err = conn.WriteMessages(b.createKafkaMessage(level, message))
 	return errors.Wrap(err, "can not exude message to Kafka")
 }
 

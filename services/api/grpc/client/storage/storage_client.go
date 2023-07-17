@@ -4,6 +4,7 @@ import (
 	"api/aerror"
 	"api/config"
 	"api/domain"
+	"api/logger"
 	"context"
 	"storage/transport/proto"
 	"strconv"
@@ -29,6 +30,7 @@ func NewStorageGRPCClient(conf config.Config) *StorageGRPCClient {
 }
 
 func (c *StorageGRPCClient) AddEmail(request domain.AddEmailRequest, cnx context.Context) error {
+	logger.DefaultLog(logger.DEBUG, "trying to add emails from gRPC client")
 	conn, err := c.connection()
 	if err != nil {
 		return errors.Wrap(err, "failed to get connection")
@@ -41,6 +43,7 @@ func (c *StorageGRPCClient) AddEmail(request domain.AddEmailRequest, cnx context
 }
 
 func (c *StorageGRPCClient) GetAllEmails(cnx context.Context) ([]domain.Email, error) {
+	logger.DefaultLog(logger.DEBUG, "trying to get emails from gRPC client")
 	conn, err := c.connection()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get connection()")

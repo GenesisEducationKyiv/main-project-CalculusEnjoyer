@@ -4,11 +4,12 @@ import (
 	"context"
 	"currency/config"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/streadway/amqp"
-	"log"
-	"time"
 )
 
 type TimeProvider interface {
@@ -17,46 +18,73 @@ type TimeProvider interface {
 
 const defaultLogExchangeName = "log"
 
-type BrokerLogger struct {
+type RabbitLogger struct {
 	timeProvider TimeProvider
 	brokerUrl    string
 	channel      *amqp091.Channel
-	conn         *amqp091.Connection
 }
 
-func NewBrokerLogger(timeProvider TimeProvider, conf config.Config) *BrokerLogger {
-	return &BrokerLogger{
+func NewBrokerLogger(timeProvider TimeProvider, conf config.Config) *RabbitLogger {
+	return &RabbitLogger{
 		timeProvider: timeProvider,
 		brokerUrl:    conf.AmqpURL,
 	}
 }
 
-func (l *BrokerLogger) InitQueue() {
+func (l *RabbitLogger) Init() {
 	conn, err := amqp091.Dial(l.brokerUrl)
 	if err != nil {
-		log.Println(errors.Wrap(err, "can not connect to the broker"))
+		log.Fatalf(errors.Wrap(err, "can not connect to the broker").Error())
 	}
-	l.conn = conn
 
-	l.channel, err = l.conn.Channel()
+	channel, err := conn.Channel()
 	if err != nil {
-		log.Println(errors.Wrap(err, "can not create channel to the broker"))
+		log.Fatalf(errors.Wrap(err, "can not create channel to the broker").Error())
 	}
 
-	go listenToClosingConn(l.conn)
-	go listenToClosingChan(l.channel)
+	l.channel = channel
+
+	go l.listenToClosingChan(l.channel)
 }
 
-func (l *BrokerLogger) Log(level LogLevel, message string) {
+func (l *RabbitLogger) Log(level LogLevel, message string) {
 	log.Printf(l.createLogMessage(level, message))
 	err := l.publish(level, message)
+
 	if err != nil {
 		log.Printf(err.Error())
 	}
 }
 
-func (l *BrokerLogger) publish(level LogLevel, message string) error {
-	return l.channel.PublishWithContext(
+func (l *RabbitLogger) getChannel() (*amqp091.Channel, error) {
+	if !l.channel.IsClosed() {
+		return l.channel, nil
+	}
+
+	conn, err := amqp091.Dial(l.brokerUrl)
+	if err != nil {
+		log.Println(errors.Wrap(err, "can not connect to the broker"))
+		return nil, err
+	}
+
+	channel, err := conn.Channel()
+	if err != nil {
+		log.Println(errors.Wrap(err, "can not create channel to the broker"))
+		return nil, err
+	}
+
+	l.channel = channel
+	return l.channel, nil
+}
+
+func (l *RabbitLogger) publish(level LogLevel, message string) error {
+	channel, err := l.getChannel()
+	if err != nil {
+		log.Println(errors.Wrap(err, "can not load channel"))
+		return errors.Wrap(err, "can not load channel")
+	}
+
+	err = channel.PublishWithContext(
 		context.Background(),
 		defaultLogExchangeName,
 		string(level),
@@ -67,31 +95,27 @@ func (l *BrokerLogger) publish(level LogLevel, message string) error {
 			Body:         []byte(l.createLogMessage(level, message)),
 			DeliveryMode: amqp.Persistent,
 		})
-}
 
-func listenToClosingConn(conn *amqp091.Connection) {
-	notifyConnClose := conn.NotifyClose(make(chan *amqp091.Error))
-	err, ok := <-notifyConnClose
-
-	if !ok {
-		notifyConnClose = nil
-	} else {
-		log.Printf("connection closed, error %s", err)
+	if err != nil {
+		log.Println(errors.Wrap(err, "can not publish log"))
 	}
+
+	return nil
 }
 
-func listenToClosingChan(ch *amqp091.Channel) {
+func (l *RabbitLogger) listenToClosingChan(ch *amqp091.Channel) {
 	notifyChanClose := ch.NotifyClose(make(chan *amqp091.Error))
 	err, ok := <-notifyChanClose
 
 	if !ok {
-		notifyChanClose = nil
+		close(notifyChanClose)
+		log.Printf(l.createLogMessage(INFO, "channel is closed"))
 	} else {
-		log.Printf("chan closed, error %s", err)
+		log.Printf(l.createLogMessage(ERROR, fmt.Sprintf("chan closed, error %s", err)))
 	}
 }
 
-func (l *BrokerLogger) createLogMessage(level LogLevel, message string) string {
+func (l *RabbitLogger) createLogMessage(level LogLevel, message string) string {
 	currentTime := l.timeProvider.Now().Format(time.UnixDate)
 	return fmt.Sprintf("[%s]: %s: %s", string(level), currentTime, message)
 }

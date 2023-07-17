@@ -24,7 +24,7 @@ func run() {
 	conf := config.LoadFromENV()
 
 	loggerInstance := logger.NewBrokerLogger(&time.SystemTime{}, conf)
-	loggerInstance.InitQueue()
+	loggerInstance.Init()
 	logger.SetDefaultLogger(loggerInstance)
 
 	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf, loggerInstance), conf), &time.SystemTime{})

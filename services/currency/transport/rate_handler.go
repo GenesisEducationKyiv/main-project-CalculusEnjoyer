@@ -6,6 +6,7 @@ import (
 	"currency/logger"
 	"currency/rate"
 	proto2 "currency/transport/proto"
+
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 

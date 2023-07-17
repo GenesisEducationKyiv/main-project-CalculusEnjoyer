@@ -29,6 +29,7 @@ func NewCurrencyGRPCClient(conf config.Config) *CurrencyGRPCClient {
 
 func (c *CurrencyGRPCClient) GetRate(request domain.RateRequest, cnx context.Context) (*domain.RateResponse, error) {
 	conn, err := c.connection()
+	logger.DefaultLog(logger.DEBUG, "trying to get rate from gRPC client")
 	if err != nil {
 		logger.DefaultLog(logger.ERROR, "fail to get connection")
 		return nil, errors.Wrap(err, "fail to get connection")
@@ -52,7 +53,7 @@ func (c *CurrencyGRPCClient) GetRate(request domain.RateRequest, cnx context.Con
 }
 
 func (c *CurrencyGRPCClient) connection() (*grpc.ClientConn, error) {
-	logger.DefaultLog(logger.INFO, "using connection to the currency service")
+	logger.DefaultLog(logger.DEBUG, "using connection to the currency service")
 	if c.conn != nil && c.conn.GetState() == connectivity.Ready {
 		return c.conn, nil
 	}

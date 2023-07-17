@@ -34,6 +34,7 @@ func (rc *RateController) GetBTCRate(w http.ResponseWriter, r *http.Request) {
 	logger.DefaultLog(logger.INFO, "receiving api call on rate endpoint")
 	response, err := rc.rateService.GetRate(domain.RateRequest{BaseCurrency: domain.BTC, TargetCurrency: domain.UAH}, r.Context())
 	if err != nil {
+		logger.DefaultLog(logger.ERROR, "failed to get rate")
 		rc.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
@@ -56,6 +57,7 @@ func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
 		BaseCurrency:   domain.Currency(base),
 		TargetCurrency: domain.Currency(target)}, r.Context())
 	if err != nil {
+		logger.DefaultLog(logger.ERROR, "failed to get rate")
 		rc.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
