@@ -64,7 +64,7 @@ func (l *BrokerLogger) publish(level LogLevel, message string) error {
 		false,
 		amqp091.Publishing{
 			ContentType:  "text/plain",
-			Body:         []byte(message),
+			Body:         []byte(l.createLogMessage(level, message)),
 			DeliveryMode: amqp.Persistent,
 		})
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"api/domain"
+	"api/logger"
 	"api/rest"
 	"context"
 	"net/http"
@@ -30,6 +31,7 @@ func NewRateController(rateService RateService, errPresenter RateErrorPresenter,
 }
 
 func (rc *RateController) GetBTCRate(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on rate endpoint")
 	response, err := rc.rateService.GetRate(domain.RateRequest{BaseCurrency: domain.BTC, TargetCurrency: domain.UAH}, r.Context())
 	if err != nil {
 		rc.errPresenter.PresentHTTPErr(err, w)
@@ -40,11 +42,13 @@ func (rc *RateController) GetBTCRate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on general rate endpoint")
 	if err := r.ParseForm(); err != nil {
 		rc.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
 
+	logger.DefaultLog(logger.DEBUG, "decoding request on general rate endpoint")
 	target := r.Form.Get(rest.KeyTargetCurrency)
 	base := r.Form.Get(rest.KeyBaseCurrency)
 
@@ -56,5 +60,6 @@ func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.DefaultLog(logger.DEBUG, "successfully returning rate on general rate endpoint")
 	rc.presenter.SuccessfulRateResponse(w, *response)
 }

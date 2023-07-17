@@ -5,10 +5,12 @@ import (
 	"api/grpc/client/currency"
 	"api/grpc/client/email"
 	"api/grpc/client/storage"
+	"api/logger"
 	"api/rest"
 	"api/rest/controller"
 	"api/rest/presenter/json"
 	"api/service"
+	"api/time"
 	"api/validator"
 	"net/http"
 	"strconv"
@@ -26,6 +28,10 @@ func run() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+
+	loggerInstance := logger.NewBrokerLogger(&time.SystemTime{}, conf)
+	loggerInstance.Init()
+	logger.SetDefaultLogger(loggerInstance)
 
 	emailService := service.NewEmailService(
 		validator.NewRegexValidator(*validator.DefaultEmailRegex),

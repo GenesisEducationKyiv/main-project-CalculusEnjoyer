@@ -49,7 +49,7 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("[%s]: %s", level, d.Body)
+			log.Printf("%s", d.Body)
 		}
 	}()
 

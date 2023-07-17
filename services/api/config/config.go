@@ -16,6 +16,7 @@ type Config struct {
 	CurrencyPort    int
 	StorageNetwork  string
 	StoragePort     int
+	KafkaAddress    string
 }
 
 func LoadFromENV() Config {
@@ -52,6 +53,7 @@ func LoadFromENV() Config {
 	conf.EmailNetwork = os.Getenv("EMAIL_NETWORK")
 	conf.CurrencyNetwork = os.Getenv("CURRENCY_NETWORK")
 	conf.StorageNetwork = os.Getenv("STORAGE_NETWORK")
+	conf.KafkaAddress = os.Getenv("KAFKA_ADDRESS")
 
 	return conf
 }

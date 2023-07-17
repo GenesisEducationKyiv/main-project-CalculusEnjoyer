@@ -4,6 +4,7 @@ import (
 	"api/domain"
 	"api/rest"
 	"context"
+	"currency/logger"
 	"net/http"
 )
 
@@ -40,6 +41,7 @@ func NewEmailController(
 }
 
 func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on add email endpoint")
 	if err := r.ParseForm(); err != nil {
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
@@ -48,6 +50,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get(rest.KeyEmail)
 
 	if err := e.emailService.AddEmail(domain.AddEmailRequest{Email: domain.Email{Value: email}}, r.Context()); err != nil {
+		logger.DefaultLog(logger.ERROR, "error while adding email")
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}

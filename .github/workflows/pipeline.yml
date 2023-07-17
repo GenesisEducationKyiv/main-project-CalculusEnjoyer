@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Rejuvenate services in Docker containers
-        working-directory: ./test/e2e
+        working-directory: ./services
         run: docker compose up -d
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
