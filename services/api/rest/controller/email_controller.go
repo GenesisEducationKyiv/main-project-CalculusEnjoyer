@@ -5,6 +5,7 @@ import (
 	"api/logger"
 	"api/rest"
 	"context"
+	"currency/logger"
 	"net/http"
 )
 
