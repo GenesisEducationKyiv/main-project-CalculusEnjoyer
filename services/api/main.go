@@ -3,6 +3,7 @@ package main
 import (
 	"api/config"
 	"api/grpc/client/currency"
+	"api/grpc/client/dtm"
 	"api/grpc/client/email"
 	"api/grpc/client/storage"
 	"api/logger"
@@ -37,7 +38,8 @@ func run() {
 		validator.NewRegexValidator(*validator.DefaultEmailRegex),
 		currency.NewCurrencyGRPCClient(conf),
 		email.NewEmailGRPCClient(conf),
-		storage.NewStorageGRPCClient(conf))
+		storage.NewStorageGRPCClient(conf),
+		dtm.NewDTMClient(conf))
 
 	email := controller.NewEmailController(
 		emailService,
@@ -53,6 +55,7 @@ func run() {
 		r.Post(rest.Rate, rate.GetRate)
 		r.Post(rest.AddEmails, email.AddEmail)
 		r.Post(rest.SendEmails, email.SendBTCRateEmails)
+		r.Post(rest.AddEmailWithGreetingEmail, email.AddEmailWithGreetingEmail)
 	})
 
 	http.ListenAndServe(":"+strconv.Itoa(conf.Port), r)

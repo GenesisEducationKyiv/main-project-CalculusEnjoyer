@@ -47,6 +47,18 @@ services:
       timeout: 10s
       retries: 10
 
+  dtm:
+    image: yedf/dtm
+    restart: always
+    healthcheck:
+      test:  ["CMD", "curl", "-f", "http://localhost:36789"]
+      interval: 4s
+      timeout: 10s
+      retries: 10
+    ports:
+      - 36790:36790 # grpc
+      - 36789:36789 # ui
+
   currency:
     restart: unless-stopped
     build: ./currency
@@ -93,6 +105,8 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      dtm:
+        condition: service_started
     build:
       context: .
       dockerfile: ./api/Dockerfile
@@ -107,3 +121,4 @@ services:
       - STORAGE_NETWORK=storage
       - PORT=8080
       - KAFKA_ADDRESS=kafka:9092
+      - DTM_ADDRESS=dtm:36790
