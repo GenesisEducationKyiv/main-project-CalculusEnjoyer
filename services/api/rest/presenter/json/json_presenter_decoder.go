@@ -9,7 +9,7 @@ type HTTPResponse struct {
 	Description string `json:"description"`
 }
 
-func DecodeJSONResponse(w http.ResponseWriter, toDecode any) {
+func EncodeJSONResponse(w http.ResponseWriter, toDecode any) {
 	w.Header().Set("Content-Type", "application/json")
 
 	jsonData, err := json.Marshal(toDecode)

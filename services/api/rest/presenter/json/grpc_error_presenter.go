@@ -22,7 +22,7 @@ func (t *GRPCErrHTTPPresenter) PresentHTTPErr(err error, w http.ResponseWriter) 
 	}
 
 	w.WriteHeader(code)
-	DecodeJSONResponse(w, ErrorHTTPResponse{Error: message})
+	EncodeJSONResponse(w, ErrorHTTPResponse{Error: message})
 }
 
 func HTTPStatusFromCode(code codes.Code) int {
