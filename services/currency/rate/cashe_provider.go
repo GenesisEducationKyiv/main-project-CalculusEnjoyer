@@ -5,29 +5,27 @@ import (
 	"currency/config"
 	"currency/domain"
 	"fmt"
-	"time"
+	"log"
+
+	"github.com/patrickmn/go-cache"
 )
 
 type CachedProvider struct {
-	provider     RateProvider
-	conf         config.Config
-	timeProvider TimeProvider
-	lastRateTime time.Time
-	rate         float64
+	provider RateProvider
+	cache    *cache.Cache
 }
 
-func NewCachedProvider(provider RateProvider, conf config.Config, timeProvider TimeProvider) *CachedProvider {
+func NewCachedProvider(provider RateProvider, conf config.Config) *CachedProvider {
 	return &CachedProvider{
-		provider:     provider,
-		conf:         conf,
-		timeProvider: timeProvider,
-		lastRateTime: time.Unix(0, 0),
+		provider: provider,
+		cache:    cache.New(conf.CacheValidTime, conf.CacheValidTime),
 	}
 }
 
 func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
-	if r.timeProvider.Now().Sub(r.lastRateTime) <= r.conf.CacheValidTime {
-		return r.rate, nil
+	cacheRate, found := r.cache.Get(makeKey(baseCurrency, targetCurrency))
+	if found {
+		return cacheRate.(float64), nil
 	}
 
 	rate, err := r.provider.GetExchangeRate(baseCurrency, targetCurrency)
@@ -35,11 +33,16 @@ func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Cur
 		return cerror.ErrRateValue, err
 	}
 
-	r.rate = rate
-	r.lastRateTime = r.timeProvider.Now()
+	if err = r.cache.Add(makeKey(baseCurrency, targetCurrency), rate, cache.DefaultExpiration); err != nil {
+		log.Println("can not save rate to cache")
+	}
 	return rate, nil
 }
 
 func (r *CachedProvider) Name() string {
 	return fmt.Sprintf("Cached provider powered by: %s", r.provider.Name())
+}
+
+func makeKey(baseCurrency, targetCurrency domain.Currency) string {
+	return string(baseCurrency) + string(targetCurrency)
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"api/domain"
+	"api/rest"
 	"context"
 	"net/http"
 )
@@ -28,8 +29,28 @@ func NewRateController(rateService RateService, errPresenter RateErrorPresenter,
 	return &RateController{rateService: rateService, errPresenter: errPresenter, presenter: presenter}
 }
 
+func (rc *RateController) GetBTCRate(w http.ResponseWriter, r *http.Request) {
+	response, err := rc.rateService.GetRate(domain.RateRequest{BaseCurrency: domain.BTC, TargetCurrency: domain.UAH}, r.Context())
+	if err != nil {
+		rc.errPresenter.PresentHTTPErr(err, w)
+		return
+	}
+
+	rc.presenter.SuccessfulRateResponse(w, *response)
+}
+
 func (rc *RateController) GetRate(w http.ResponseWriter, r *http.Request) {
-	response, err := rc.rateService.GetRate(domain.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, r.Context())
+	if err := r.ParseForm(); err != nil {
+		rc.errPresenter.PresentHTTPErr(err, w)
+		return
+	}
+
+	target := r.Form.Get(rest.KeyTargetCurrency)
+	base := r.Form.Get(rest.KeyBaseCurrency)
+
+	response, err := rc.rateService.GetRate(domain.RateRequest{
+		BaseCurrency:   domain.Currency(base),
+		TargetCurrency: domain.Currency(target)}, r.Context())
 	if err != nil {
 		rc.errPresenter.PresentHTTPErr(err, w)
 		return

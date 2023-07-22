@@ -2,9 +2,12 @@ package rest
 
 const (
 	Api        = "/api"
-	Rate       = "/rate"
+	BTCRate    = "/rate"
+	Rate       = "/generalRate"
 	AddEmails  = "/subscribe"
 	SendEmails = "/sendEmails"
 
-	KeyEmail = "email"
+	KeyEmail          = "email"
+	KeyTargetCurrency = "target"
+	KeyBaseCurrency   = "base"
 )

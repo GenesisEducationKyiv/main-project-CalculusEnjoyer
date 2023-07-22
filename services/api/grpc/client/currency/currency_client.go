@@ -34,7 +34,12 @@ func (c *CurrencyGRPCClient) GetRate(request domain.RateRequest, cnx context.Con
 
 	client := proto.NewRateServiceClient(conn)
 
-	response, err := client.GetRate(cnx, modelRateToProto(&request))
+	proto, err := c.modelRateToProto(&request)
+	if err != nil {
+		return nil, errors.Wrap(err, "can not make proto request for getting rate")
+	}
+
+	response, err := client.GetRate(cnx, proto)
 	if err != nil {
 		return nil, errors.Wrap(err, "can not get rate")
 	}
@@ -69,9 +74,9 @@ func protoRateToModel(response *proto.RateResponse) *domain.RateResponse {
 	}
 }
 
-func modelRateToProto(request *domain.RateRequest) *proto.RateRequest {
+func (c *CurrencyGRPCClient) modelRateToProto(request *domain.RateRequest) (*proto.RateRequest, error) {
 	return &proto.RateRequest{
-		BaseCurrency:   request.BaseCurrency,
-		TargetCurrency: request.TargetCurrency,
-	}
+		BaseCurrency:   string(request.BaseCurrency),
+		TargetCurrency: string(request.TargetCurrency),
+	}, nil
 }

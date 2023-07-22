@@ -43,7 +43,8 @@ func run() {
 		&json.JSONRatePresenter{})
 
 	r.Route(rest.Api, func(r chi.Router) {
-		r.Get(rest.Rate, rate.GetRate)
+		r.Get(rest.BTCRate, rate.GetBTCRate)
+		r.Post(rest.Rate, rate.GetRate)
 		r.Post(rest.AddEmails, email.AddEmail)
 		r.Post(rest.SendEmails, email.SendBTCRateEmails)
 	})
