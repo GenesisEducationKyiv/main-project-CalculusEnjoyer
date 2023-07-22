@@ -3,7 +3,7 @@ package crypto
 import (
 	"currency/cerror"
 	"currency/config"
-	"currency/rate/messages"
+	"currency/domain"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,15 +11,15 @@ import (
 
 type CoinGeckoRateProvider struct {
 	coinGeckoURL        string
-	supportedCurrencies map[messages.Currency]string
+	supportedCurrencies map[domain.Currency]string
 }
 
 type CoinGeckoResponse map[string]map[string]float64
 
 func NewCoinGeckoRateProvider(conf config.Config) *CoinGeckoRateProvider {
-	currencies := map[messages.Currency]string{
-		messages.BTC: "bitcoin",
-		messages.UAH: "uah",
+	currencies := map[domain.Currency]string{
+		domain.BTC: "bitcoin",
+		domain.UAH: "uah",
 	}
 
 	return &CoinGeckoRateProvider{
@@ -28,7 +28,7 @@ func NewCoinGeckoRateProvider(conf config.Config) *CoinGeckoRateProvider {
 	}
 }
 
-func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+func (p *CoinGeckoRateProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	convertedBase, err := p.currencyToString(baseCurrency)
 	if err != nil {
 		return cerror.ErrRateValue, err
@@ -69,7 +69,7 @@ func decodeRateResponse(resp *http.Response, baseCurrencyName, targetCurrencyNam
 	return rate, nil
 }
 
-func (p *CoinGeckoRateProvider) currencyToString(currency messages.Currency) (string, error) {
+func (p *CoinGeckoRateProvider) currencyToString(currency domain.Currency) (string, error) {
 	result := p.supportedCurrencies[currency]
 	if result == "" {
 		return result, fmt.Errorf("%s is unsupported currency", string(currency))

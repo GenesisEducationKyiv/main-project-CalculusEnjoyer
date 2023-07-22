@@ -3,7 +3,7 @@ package rate
 import (
 	"currency/cerror"
 	"currency/config"
-	"currency/rate/messages"
+	"currency/domain"
 	"fmt"
 	"time"
 )
@@ -25,7 +25,7 @@ func NewCachedProvider(provider RateProvider, conf config.Config, timeProvider T
 	}
 }
 
-func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	if r.timeProvider.Now().Sub(r.lastRateTime) <= r.conf.CacheValidTime {
 		return r.rate, nil
 	}

@@ -3,10 +3,10 @@ package main
 import (
 	"currency/config"
 	"currency/rate"
-	"currency/rate/messages/proto"
 	"currency/rate/providers/crypto"
 	"currency/rate/providers/time"
-	"currency/rate/transport"
+	"currency/transport"
+	"currency/transport/proto"
 	"log"
 	"net"
 	"strconv"

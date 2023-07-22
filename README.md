@@ -6,7 +6,7 @@ rates and dispatching to subscribed emails. Implemented using a microservice arc
 and the gRPC for connection between them. All services are independent and run in separate Docker containers.
 
 <br />
-<img src="https://github.com/CalculusEnjoyer/Ultimate-Crypto-Rate-Provider/blob/main/micro.png">
+<img src="https://github.com/CalculusEnjoyer/Ultimate-Crypto-Rate-Provider/blob/main/docs/arch.png">
 <br />
 
 ## Running the application

@@ -1,7 +1,7 @@
 package rate
 
 import (
-	"currency/rate/messages"
+	"currency/domain"
 	"log"
 )
 
@@ -17,7 +17,7 @@ func NewRateLogger(provider RateProvider, logger *log.Logger) *RateLogger {
 	}
 }
 
-func (p *RateLogger) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+func (p *RateLogger) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	rate, err := p.provider.GetExchangeRate(baseCurrency, targetCurrency)
 	if err != nil {
 		p.logger.Printf("Getting rate from %s FAILED: %v", p.provider.Name(), err)

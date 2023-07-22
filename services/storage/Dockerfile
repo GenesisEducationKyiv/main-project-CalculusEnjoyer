@@ -16,6 +16,6 @@ WORKDIR /root/
 
 COPY --from=build-stage /build/main .
 COPY --from=build-stage /build/.env .
-COPY --from=build-stage /build/emails/source/emails.csv ./emails/source/emails.csv
+COPY --from=build-stage /build/email/source/emails.csv ./email/source/emails.csv
 
 CMD ["./main"]

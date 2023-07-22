@@ -3,9 +3,10 @@ package crypto
 import (
 	"currency/cerror"
 	"currency/config"
-	"currency/rate/messages"
+	"currency/domain"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -14,13 +15,13 @@ import (
 type CoinAPIProvider struct {
 	endpoint   string
 	apiKey     string
-	currencies map[messages.Currency]string
+	currencies map[domain.Currency]string
 }
 
 func NewCoinAPIProvider(conf config.Config) *CoinAPIProvider {
-	currencies := map[messages.Currency]string{
-		messages.BTC: "BTC",
-		messages.UAH: "UAH",
+	currencies := map[domain.Currency]string{
+		domain.BTC: "BTC",
+		domain.UAH: "UAH",
 	}
 
 	return &CoinAPIProvider{
@@ -30,7 +31,7 @@ func NewCoinAPIProvider(conf config.Config) *CoinAPIProvider {
 	}
 }
 
-func (p *CoinAPIProvider) GetExchangeRate(baseCurrency, targetCurrency messages.Currency) (float64, error) {
+func (p *CoinAPIProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	request, err := p.generateHTTPRequest(baseCurrency, targetCurrency)
 	if err != nil {
 		return cerror.ErrRateValue, errors.Wrap(err, "can not generate http request for getting rate")
@@ -46,7 +47,7 @@ func (p *CoinAPIProvider) GetExchangeRate(baseCurrency, targetCurrency messages.
 	return p.extractRate(res)
 }
 
-func (p *CoinAPIProvider) generateHTTPRequest(baseCurrency, targetCurrency messages.Currency) (*http.Request, error) {
+func (p *CoinAPIProvider) generateHTTPRequest(baseCurrency, targetCurrency domain.Currency) (*http.Request, error) {
 	endpoint, err := p.generateEndpoint(baseCurrency, targetCurrency)
 	if err != nil {
 		return nil, errors.Wrap(err, "can not generate request")
@@ -71,7 +72,7 @@ func (p *CoinAPIProvider) Name() string {
 	return "COINAPI"
 }
 
-func (p *CoinAPIProvider) generateEndpoint(baseCurrency, targetCurrency messages.Currency) (string, error) {
+func (p *CoinAPIProvider) generateEndpoint(baseCurrency, targetCurrency domain.Currency) (string, error) {
 	convertedBase, err := p.currencyToString(baseCurrency)
 	if err != nil {
 		return "", err
@@ -96,10 +97,11 @@ func (p *CoinAPIProvider) extractRate(response *http.Response) (float64, error) 
 		return cerror.ErrRateValue, err
 	}
 
+	log.Printf("Getting rate from COINAPI: %f", data.Rate)
 	return data.Rate, nil
 }
 
-func (p *CoinAPIProvider) currencyToString(currency messages.Currency) (string, error) {
+func (p *CoinAPIProvider) currencyToString(currency domain.Currency) (string, error) {
 	result := p.currencies[currency]
 	if result == "" {
 		return result, fmt.Errorf("%s is unsupported currency", string(currency))

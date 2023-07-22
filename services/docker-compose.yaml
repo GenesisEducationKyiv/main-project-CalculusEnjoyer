@@ -18,7 +18,7 @@ services:
     ports:
       - 8082
     environment:
-      - STORAGE_PATH=./emails/source/emails.csv
+      - STORAGE_PATH=./email/source/emails.csv
       - PORT=8082
       - NETWORK=tcp
 
@@ -31,7 +31,7 @@ services:
       - EMAIL_HOST=smtp.gmail.com
       - EMAIL_PORT=587
       - EMAIL_SENDER=genesistesttask7@gmail.com
-      - EMAIL_PASS=jwajyxamarmpbdbi
+      - EMAIL_PASS=kvrkgmppacjpfngu
       - NETWORK=tcp
       - PORT=8081
 

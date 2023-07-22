@@ -4,10 +4,10 @@ import (
 	"log"
 	"net"
 	"storage/config"
-	"storage/emails"
-	"storage/emails/messages/proto"
-	"storage/emails/orchestrator"
-	"storage/emails/transport"
+	"storage/email"
+	"storage/orchestrator"
+	"storage/transport"
+	"storage/transport/proto"
 	"strconv"
 
 	kitgrpc "github.com/go-kit/kit/transport/grpc"
@@ -21,8 +21,8 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := emails.NewStorageRepository(orchestrator.NewFileOrchestrator(conf))
-	eps := emails.NewEndpointSet(service)
+	service := email.NewStorageRepository(orchestrator.NewFileOrchestrator(conf))
+	eps := email.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
 	proto.RegisterStorageServiceServer(baseServer, grpcServer)

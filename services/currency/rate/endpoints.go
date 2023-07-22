@@ -2,7 +2,7 @@ package rate
 
 import (
 	"context"
-	"currency/rate/messages"
+	"currency/domain"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -19,7 +19,7 @@ func NewEndpointSet(svc RateService) Endpoints {
 
 func MakeGetRateEndpoint(svc RateService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(messages.RateRequest)
+		req := request.(domain.RateRequest)
 		result, err := svc.GetRate(req)
 		return result, err
 	}
