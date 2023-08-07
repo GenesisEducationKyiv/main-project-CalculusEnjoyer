@@ -19,16 +19,21 @@ type EmailExecutor interface {
 	SendEmail(request domain.SendEmailsRequest, cnx context.Context) error
 }
 
+type EmailTransactionExecutor interface {
+	SubmitAddEmailWithGreetingMessage(request domain.AddEmailRequest, email domain.SendEmailsRequest) error
+}
+
 type EmailRepository interface {
 	AddEmail(request domain.AddEmailRequest, cnx context.Context) error
 	GetAllEmails(cnx context.Context) ([]domain.Email, error)
 }
 
 type EmailService struct {
-	emailValidator      EmailValidator
-	rateProvider        RateProvider
-	emailExecutor       EmailExecutor
-	storageOrchestrator EmailRepository
+	emailValidator           EmailValidator
+	rateProvider             RateProvider
+	emailExecutor            EmailExecutor
+	storageOrchestrator      EmailRepository
+	emailTransactionExecutor EmailTransactionExecutor
 }
 
 func NewEmailService(
@@ -36,12 +41,14 @@ func NewEmailService(
 	rateProvider RateProvider,
 	emailExecutor EmailExecutor,
 	storageOrchestrator EmailRepository,
+	emailTransactionExecutor EmailTransactionExecutor,
 ) *EmailService {
 	return &EmailService{
-		emailValidator:      emailValidator,
-		rateProvider:        rateProvider,
-		emailExecutor:       emailExecutor,
-		storageOrchestrator: storageOrchestrator,
+		emailValidator:           emailValidator,
+		rateProvider:             rateProvider,
+		emailExecutor:            emailExecutor,
+		storageOrchestrator:      storageOrchestrator,
+		emailTransactionExecutor: emailTransactionExecutor,
 	}
 }
 
@@ -58,7 +65,7 @@ func (e *EmailService) AddEmail(email domain.AddEmailRequest, cnx context.Contex
 }
 
 func (e *EmailService) SendRateEmails(cnx context.Context) (err error) {
-	rateResp, err := e.rateProvider.GetRate(domain.RateRequest{BaseCurrency: "bitcoin", TargetCurrency: "uah"}, cnx)
+	rateResp, err := e.rateProvider.GetRate(domain.RateRequest{BaseCurrency: domain.BTC, TargetCurrency: domain.UAH}, cnx)
 	if err != nil {
 		return errors.Wrap(err, "can not get rate")
 	}
@@ -76,6 +83,21 @@ func (e *EmailService) SendRateEmails(cnx context.Context) (err error) {
 	}
 
 	return err
+}
+
+func (e *EmailService) AddEmailWithGreeting(request domain.AddEmailRequest, _ context.Context) error {
+	err := e.emailTransactionExecutor.SubmitAddEmailWithGreetingMessage(request, generateGreetingEmail(request))
+	return errors.Wrap(err, "can not add email with greeting")
+}
+
+func generateGreetingEmail(request domain.AddEmailRequest) domain.SendEmailsRequest {
+	return domain.SendEmailsRequest{
+		Interceptor: request.Email,
+		Template: domain.EmailContent{
+			Body:    fmt.Sprintf(template.GreetingEmailString, request.Email.Value),
+			Subject: template.GreetingEmailSubject,
+		},
+	}
 }
 
 func generateRateEmail(interceptor domain.Email, rate float64) domain.SendEmailsRequest {

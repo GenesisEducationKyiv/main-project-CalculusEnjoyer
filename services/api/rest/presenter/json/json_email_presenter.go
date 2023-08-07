@@ -16,3 +16,8 @@ func (p *JSONEmailPresenter) SuccessfullyAddEmail(w http.ResponseWriter) {
 	logger.DefaultLog(logger.DEBUG, "decoding email was added successfully response")
 	EncodeJSONResponse(w, HTTPResponse{Description: "email was successfully added"})
 }
+
+func (p *JSONEmailPresenter) SuccessfullyAddEmailAndSentGreet(w http.ResponseWriter) {
+	logger.DefaultLog(logger.DEBUG, "decoding email was added successfully response")
+	EncodeJSONResponse(w, HTTPResponse{Description: "email was successfully added and sent greet to it"})
+}

@@ -1,6 +1,7 @@
 package email
 
 import (
+	"fmt"
 	"storage/domain"
 	"storage/serror"
 
@@ -8,13 +9,15 @@ import (
 )
 
 type Orchestrator interface {
+	DeleteEmail(email domain.Email) error
 	WriteEmail(email domain.Email) error
 	GetAllRecords() ([]domain.Email, error)
 }
 
 type EmailRepository interface {
-	Add(email domain.Email) (err error)
+	Add(email domain.Email) error
 	GetAll() (emails []domain.Email, err error)
+	Delete(email domain.Email) error
 	Exists(email domain.Email) (result bool, err error)
 }
 
@@ -61,4 +64,9 @@ func (r *fileEmailRepository) Exists(email domain.Email) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (r *fileEmailRepository) Delete(email domain.Email) error {
+	err := r.Orchestrator.DeleteEmail(email)
+	return errors.Wrap(err, fmt.Sprintf("can not delete email %s", email.Value))
 }

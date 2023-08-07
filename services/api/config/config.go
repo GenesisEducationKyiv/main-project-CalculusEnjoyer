@@ -17,6 +17,7 @@ type Config struct {
 	StorageNetwork  string
 	StoragePort     int
 	KafkaAddress    string
+	DTMAddress      string
 }
 
 func LoadFromENV() Config {
@@ -50,6 +51,7 @@ func LoadFromENV() Config {
 	}
 	conf.StoragePort = storage
 
+	conf.DTMAddress = os.Getenv("DTM_ADDRESS")
 	conf.EmailNetwork = os.Getenv("EMAIL_NETWORK")
 	conf.CurrencyNetwork = os.Getenv("CURRENCY_NETWORK")
 	conf.StorageNetwork = os.Getenv("STORAGE_NETWORK")

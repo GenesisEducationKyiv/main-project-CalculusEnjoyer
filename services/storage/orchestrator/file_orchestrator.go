@@ -2,6 +2,8 @@ package orchestrator
 
 import (
 	"encoding/csv"
+	"fmt"
+	"log"
 	"os"
 	"storage/config"
 	"storage/domain"
@@ -74,4 +76,54 @@ func (o *FileOrchestrator) WriteEmail(email domain.Email) error {
 	defer writer.Flush()
 
 	return writer.Write([]string{email.Value})
+}
+
+func (o *FileOrchestrator) DeleteEmail(target domain.Email) (err error) {
+	emails, err := o.GetAllRecords()
+	if err != nil {
+		return errors.Wrap(err, "can not get emails while deleting email")
+	}
+
+	o.clearTestFile()
+
+	emailsNoTarget, err := deleteEmailFromSlice(&emails, target)
+	if err != nil {
+		return errors.Wrap(err, "can not remove email")
+	}
+
+	for _, email := range *emailsNoTarget {
+		writeError := o.WriteEmail(email)
+		if writeError != nil {
+			if err == nil {
+				err = writeError
+			}
+			log.Printf("error while coping %s", email.Value)
+			err = errors.Wrap(err, fmt.Sprintf("error while coping %s", email.Value))
+		}
+	}
+
+	return err
+}
+
+func (o *FileOrchestrator) clearTestFile() {
+	if err := os.Truncate(o.StoragePath, 0); err != nil {
+		log.Fatalf(errors.Wrap(err, "Can not load test config").Error())
+	}
+}
+
+func deleteEmailFromSlice(emails *[]domain.Email, target domain.Email) (*[]domain.Email, error) {
+	index := -1
+	for i, email := range *emails {
+		if email.Value == target.Value {
+			index = i
+			break
+		}
+	}
+
+	if index == -1 {
+		return nil, errors.New(fmt.Sprintf("in storage there is no %s", target))
+	}
+
+	result := append((*emails)[:index], (*emails)[index+1:]...)
+	return &result, nil
 }

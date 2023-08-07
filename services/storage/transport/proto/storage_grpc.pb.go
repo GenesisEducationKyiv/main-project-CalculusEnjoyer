@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,8 +20,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	StorageService_AddEmail_FullMethodName     = "/messages.StorageService/Add"
-	StorageService_GetAllEmails_FullMethodName = "/messages.StorageService/GetAll"
+	StorageService_AddEmail_FullMethodName       = "/StorageService/AddEmail"
+	StorageService_AddEmailRevert_FullMethodName = "/StorageService/AddEmailRevert"
+	StorageService_GetAllEmails_FullMethodName   = "/StorageService/GetAllEmails"
 )
 
 // StorageServiceClient is the client API for StorageService service.
@@ -28,6 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StorageServiceClient interface {
 	AddEmail(ctx context.Context, in *AddEmailRequest, opts ...grpc.CallOption) (*AddEmailResponse, error)
+	AddEmailRevert(ctx context.Context, in *AddEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAllEmails(ctx context.Context, in *GetAllEmailsRequest, opts ...grpc.CallOption) (*GetAllEmailsResponse, error)
 }
 
@@ -48,6 +51,15 @@ func (c *storageServiceClient) AddEmail(ctx context.Context, in *AddEmailRequest
 	return out, nil
 }
 
+func (c *storageServiceClient) AddEmailRevert(ctx context.Context, in *AddEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, StorageService_AddEmailRevert_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *storageServiceClient) GetAllEmails(ctx context.Context, in *GetAllEmailsRequest, opts ...grpc.CallOption) (*GetAllEmailsResponse, error) {
 	out := new(GetAllEmailsResponse)
 	err := c.cc.Invoke(ctx, StorageService_GetAllEmails_FullMethodName, in, out, opts...)
@@ -62,6 +74,7 @@ func (c *storageServiceClient) GetAllEmails(ctx context.Context, in *GetAllEmail
 // for forward compatibility
 type StorageServiceServer interface {
 	AddEmail(context.Context, *AddEmailRequest) (*AddEmailResponse, error)
+	AddEmailRevert(context.Context, *AddEmailRequest) (*emptypb.Empty, error)
 	GetAllEmails(context.Context, *GetAllEmailsRequest) (*GetAllEmailsResponse, error)
 }
 
@@ -70,15 +83,18 @@ type UnimplementedStorageServiceServer struct {
 }
 
 func (UnimplementedStorageServiceServer) AddEmail(context.Context, *AddEmailRequest) (*AddEmailResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method AddEmail not implemented")
+}
+func (UnimplementedStorageServiceServer) AddEmailRevert(context.Context, *AddEmailRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddEmailRevert not implemented")
 }
 func (UnimplementedStorageServiceServer) GetAllEmails(context.Context, *GetAllEmailsRequest) (*GetAllEmailsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllEmails not implemented")
 }
 
 // UnsafeStorageServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to StorageServiceServer will
-// result in compilation serror.
+// result in compilation errors.
 type UnsafeStorageServiceServer interface {
 	mustEmbedUnimplementedStorageServiceServer()
 }
@@ -105,6 +121,24 @@ func _StorageService_AddEmail_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StorageService_AddEmailRevert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageServiceServer).AddEmailRevert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageService_AddEmailRevert_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageServiceServer).AddEmailRevert(ctx, req.(*AddEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StorageService_GetAllEmails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetAllEmailsRequest)
 	if err := dec(in); err != nil {
@@ -127,15 +161,19 @@ func _StorageService_GetAllEmails_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var StorageService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "messages.StorageService",
+	ServiceName: "StorageService",
 	HandlerType: (*StorageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Add",
+			MethodName: "AddEmail",
 			Handler:    _StorageService_AddEmail_Handler,
 		},
 		{
-			MethodName: "GetAll",
+			MethodName: "AddEmailRevert",
+			Handler:    _StorageService_AddEmailRevert_Handler,
+		},
+		{
+			MethodName: "GetAllEmails",
 			Handler:    _StorageService_GetAllEmails_Handler,
 		},
 	},
