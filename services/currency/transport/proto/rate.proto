@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package messages;
+
+option go_package = "./proto";
+
+service RateService {
+  rpc GetRate (RateRequest) returns (RateResponse) {}
+}
+
+message RateRequest {
+  string base_currency = 1;
+  string target_currency = 2;
+}
+
+message RateResponse {
+  double rate = 1;
+  string timestamp = 2;
+  string error = 3;
+}

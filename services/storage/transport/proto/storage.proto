@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "./proto";
+
+service StorageService {
+  rpc AddEmail (AddEmailRequest) returns (AddEmailResponse) {}
+  rpc AddEmailRevert (AddEmailRequest) returns (google.protobuf.Empty) {}
+  rpc GetAllEmails (GetAllEmailsRequest) returns (GetAllEmailsResponse) {}
+}
+
+message AddEmailRequest {
+  string email = 1;
+}
+
+message AddEmailResponse {}
+
+message GetAllEmailsRequest {}
+
+message GetAllEmailsResponse {
+  repeated string email = 1;
+}
