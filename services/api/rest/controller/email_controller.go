@@ -2,6 +2,7 @@ package controller
 
 import (
 	"api/domain"
+	"api/logger"
 	"api/rest"
 	"context"
 	"net/http"
@@ -40,6 +41,7 @@ func NewEmailController(
 }
 
 func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on add email endpoint")
 	if err := r.ParseForm(); err != nil {
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
@@ -48,6 +50,7 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 	email := r.Form.Get(rest.KeyEmail)
 
 	if err := e.emailService.AddEmail(domain.AddEmailRequest{Email: domain.Email{Value: email}}, r.Context()); err != nil {
+		logger.DefaultLog(logger.ERROR, "error while adding email")
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}
@@ -56,7 +59,9 @@ func (e *EmailController) AddEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *EmailController) SendBTCRateEmails(w http.ResponseWriter, r *http.Request) {
+	logger.DefaultLog(logger.INFO, "receiving api call on send email endpoint")
 	if err := e.emailService.SendRateEmails(r.Context()); err != nil {
+		logger.DefaultLog(logger.ERROR, "failed to send emails")
 		e.errPresenter.PresentHTTPErr(err, w)
 		return
 	}

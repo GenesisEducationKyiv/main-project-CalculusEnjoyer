@@ -2,6 +2,7 @@ package main
 
 import (
 	"currency/config"
+	logger "currency/logger"
 	"currency/rate"
 	"currency/rate/providers/crypto"
 	"currency/rate/providers/time"
@@ -22,7 +23,11 @@ func main() {
 func run() {
 	conf := config.LoadFromENV()
 
-	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf), conf), &time.SystemTime{})
+	loggerInstance := logger.NewBrokerLogger(&time.SystemTime{}, conf)
+	loggerInstance.Init()
+	logger.SetDefaultLogger(loggerInstance)
+
+	service := rate.NewRateService(rate.NewCachedProvider(bootstrapRateProviders(conf, loggerInstance), conf), &time.SystemTime{})
 	eps := rate.NewEndpointSet(service)
 	grpcServer := transport.NewGRPCServer(eps)
 	baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
@@ -37,10 +42,10 @@ func run() {
 	}
 }
 
-func bootstrapRateProviders(conf config.Config) *rate.RateLink {
-	kunaLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewKunaRateProvider(conf), log.Default()))
-	coinApiLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinAPIProvider(conf), log.Default()))
-	coinGeckoLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinGeckoRateProvider(conf), log.Default()))
+func bootstrapRateProviders(conf config.Config, logger logger.Logger) *rate.RateLink {
+	kunaLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewKunaRateProvider(conf), logger))
+	coinApiLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinAPIProvider(conf), logger))
+	coinGeckoLink := rate.NewRateLink(rate.NewRateLogger(crypto.NewCoinGeckoRateProvider(conf), logger))
 
 	kunaLink.SetNextLink(coinApiLink)
 	coinApiLink.SetNextLink(coinGeckoLink)

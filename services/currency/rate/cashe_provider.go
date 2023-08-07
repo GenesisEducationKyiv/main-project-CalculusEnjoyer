@@ -4,8 +4,8 @@ import (
 	"currency/cerror"
 	"currency/config"
 	"currency/domain"
+	"currency/logger"
 	"fmt"
-	"log"
 
 	"github.com/patrickmn/go-cache"
 )
@@ -25,6 +25,7 @@ func NewCachedProvider(provider RateProvider, conf config.Config) *CachedProvide
 func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	cacheRate, found := r.cache.Get(makeKey(baseCurrency, targetCurrency))
 	if found {
+		logger.DefaultLog(logger.INFO, "getting rate from cache")
 		return cacheRate.(float64), nil
 	}
 
@@ -34,8 +35,9 @@ func (r *CachedProvider) GetExchangeRate(baseCurrency, targetCurrency domain.Cur
 	}
 
 	if err = r.cache.Add(makeKey(baseCurrency, targetCurrency), rate, cache.DefaultExpiration); err != nil {
-		log.Println("can not save rate to cache")
+		logger.DefaultLog(logger.ERROR, "can not add rate to the cache")
 	}
+
 	return rate, nil
 }
 

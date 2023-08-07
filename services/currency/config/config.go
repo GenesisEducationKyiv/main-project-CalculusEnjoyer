@@ -16,6 +16,7 @@ type Config struct {
 	CoinApiURL     string
 	CoinApiKey     string
 	KunaURL        string
+	AmqpURL        string
 	CacheValidTime time.Duration
 }
 
@@ -31,6 +32,8 @@ func LoadFromENV() Config {
 		panic(errors.Wrap(err, "Can not load PORT"))
 	}
 	conf.Port = port
+
+	conf.AmqpURL = os.Getenv("AMQP_URL")
 
 	cachedTime, err := strconv.ParseInt(os.Getenv("RATE_CACHE_TIME"), 10, 64)
 	if err != nil {

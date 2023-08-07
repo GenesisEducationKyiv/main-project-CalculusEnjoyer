@@ -2,15 +2,16 @@ package rate
 
 import (
 	"currency/domain"
-	"log"
+	"currency/logger"
+	"fmt"
 )
 
 type RateLogger struct {
 	provider RateProvider
-	logger   *log.Logger
+	logger   logger.Logger
 }
 
-func NewRateLogger(provider RateProvider, logger *log.Logger) *RateLogger {
+func NewRateLogger(provider RateProvider, logger logger.Logger) *RateLogger {
 	return &RateLogger{
 		provider: provider,
 		logger:   logger,
@@ -20,9 +21,9 @@ func NewRateLogger(provider RateProvider, logger *log.Logger) *RateLogger {
 func (p *RateLogger) GetExchangeRate(baseCurrency, targetCurrency domain.Currency) (float64, error) {
 	rate, err := p.provider.GetExchangeRate(baseCurrency, targetCurrency)
 	if err != nil {
-		p.logger.Printf("Getting rate from %s FAILED: %v", p.provider.Name(), err)
+		p.logger.Log(logger.ERROR, fmt.Sprintf("Getting rate from %s FAILED: %v", p.provider.Name(), err))
 	} else {
-		p.logger.Printf("Getting rate from %s: %f", p.provider.Name(), rate)
+		p.logger.Log(logger.INFO, fmt.Sprintf("Getting rate from %s: %f", p.provider.Name(), rate))
 	}
 
 	return rate, err
